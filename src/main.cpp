@@ -301,7 +301,8 @@ void setDefaults() {
     settings.pulseMin[i] = DEFAULT_PULSE_MIN_US;
     settings.pulseNeutral[i] = DEFAULT_PULSE_NEUTRAL_US;
     settings.pulseMax[i] = DEFAULT_PULSE_MAX_US;
-    settings.revBoost[i] = DEFAULT_REV_BOOST;
+    settings.reverse[i] = DEFAULT_THRUSTER_REVERSE[i];
+    settings.revBoost[i] = DEFAULT_THRUSTER_REV_BOOST[i];
   }
   settings.globalRevBoost = DEFAULT_REV_BOOST;
   settings.deadbandUs = DEFAULT_DEADBAND_US;
@@ -378,6 +379,24 @@ bool loadSettings() {
   if (settings.magic == CONFIG_MAGIC && settings.version == CONFIG_VERSION &&
       settings.checksum == checksumSettings(settings)) {
     if (validateSettings(settings)) {
+      return true;
+    }
+  }
+
+  // Direct migration from v7
+  Settings v7{};
+  EEPROM.get(0, v7);
+  if (v7.magic == CONFIG_MAGIC && v7.version == 7 &&
+      v7.checksum == checksumSettings(v7)) {
+    settings = v7;
+    settings.version = CONFIG_VERSION;
+    for (size_t i = 0; i < THRUSTER_COUNT; ++i) {
+      settings.reverse[i] = DEFAULT_THRUSTER_REVERSE[i];
+      settings.revBoost[i] = DEFAULT_THRUSTER_REV_BOOST[i];
+    }
+    if (validateSettings(settings) && persistSettings()) {
+      Serial.println("Konfigurasi tersimpan dimigrasikan dari v7 ke Firmware v1.0 (v8).");
+      settingsLayoutMigrated = true;
       return true;
     }
   }
@@ -2585,7 +2604,7 @@ void setup() {
   settingsLoaded = loadSettings();
   if (!settingsLoaded) {
     setDefaults();
-    persistSettings();
+    settingsLoaded = persistSettings();
     Serial.println("EEPROM baru/direset ke konfigurasi Firmware v1.0 default.");
   }
   setupMode = false;

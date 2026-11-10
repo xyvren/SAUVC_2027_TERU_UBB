@@ -6,7 +6,7 @@
 namespace ROVConfig {
 
 constexpr uint32_t CONFIG_MAGIC = 0x524F5657;
-constexpr uint8_t CONFIG_VERSION = 7;
+constexpr uint8_t CONFIG_VERSION = 8;
 constexpr char DEFAULT_HOTSPOT_NAME[] = "AUV_UBB_JUARA";
 constexpr char DEFAULT_HOTSPOT_PASSWORD[] = "ubbjuara2027";
 constexpr char DEFAULT_WEB_USERNAME[] = "menang";
@@ -109,6 +109,10 @@ constexpr float VSYS_DIVIDER_MULTIPLIER = 3.0f;
 
 // GPIO output per motor, in T1-T6 order.
 constexpr uint8_t DEFAULT_THRUSTER_PINS[THRUSTER_COUNT] = {2, 3, 4, 5, 6, 7};
+
+// Default direction inversion (0: Normal, 1: Reverse) and reverse boost compensation per motor (T1..T6)
+constexpr uint8_t DEFAULT_THRUSTER_REVERSE[THRUSTER_COUNT] = {0, 0, 0, 0, 1, 0};
+constexpr float DEFAULT_THRUSTER_REV_BOOST[THRUSTER_COUNT] = {1.30f, 1.05f, 1.20f, 1.40f, 1.25f, 1.35f};
 
 // Mixer row order: T1 rear-left (CW), T2 front-right (CW), T3 front-left (CCW),
 // T4 rear-right (CCW), T5 middle-right vertical (CCW), T6 middle-left vertical (CW).
