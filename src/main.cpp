@@ -1279,7 +1279,6 @@ bool cliStartMotorTest(uint8_t id, int16_t pulseOrPercent, String& errorMsg) {
     return false;
   }
 
-  armed = false;
   individualThrusterMode = false;
   testSequenceActive = false;
   autoModeEnabled = false;
@@ -1573,7 +1572,29 @@ bool attachThrusters() {
 }
 
 void updateThrusters() {
-  if (!armed || !outputsReady) {
+  if (!outputsReady) {
+    return;
+  }
+
+  const uint32_t now = millis();
+
+  // If a single motor test is currently running from CLI, keep outputting the test pulse!
+  if (cliTestMotorUntil > 0 && now < cliTestMotorUntil) {
+    if (cliTestMotorId >= 1 && cliTestMotorId <= THRUSTER_COUNT) {
+      for (size_t i = 0; i < THRUSTER_COUNT; ++i) {
+        if (i == cliTestMotorId - 1) {
+          thrusters[i].writeMicroseconds(cliTestMotorPulse);
+          currentThrusterPulse[i] = cliTestMotorPulse;
+        } else {
+          thrusters[i].writeMicroseconds(settings.pulseNeutral[i]);
+          currentThrusterPulse[i] = settings.pulseNeutral[i];
+        }
+      }
+    }
+    return;
+  }
+
+  if (!armed) {
     if (!thrustersAlreadyNeutral) {
       stopAllThrusters();
     }
@@ -1581,7 +1602,6 @@ void updateThrusters() {
   }
   thrustersAlreadyNeutral = false;
 
-  const uint32_t now = millis();
   const uint32_t elapsedMs = lastOutputAt == 0
       ? 20
       : min(static_cast<uint32_t>(now - lastOutputAt), 50u);
@@ -2668,6 +2688,7 @@ void loop() {
     }
     cliTestMotorUntil = 0;
     cliTestMotorId = 0;
+    thrustersAlreadyNeutral = false;
   }
 
   // Underwater Blackbox Flight Recorder (10Hz / 100ms sample rate)
