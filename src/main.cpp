@@ -1032,7 +1032,14 @@ void updateAutonomousStateMachine(uint32_t now) {
       if (now - stepStartedAtMs >= static_cast<uint32_t>(settings.stepTimeoutSec * 1000)) {
         CLIEngine::log(CLIEngine::Level::WARN, "SAFE", "Step DIVE timeout (%u s). Lanjut tahap berikutnya.", settings.stepTimeoutSec);
         stepStartedAtMs = now;
-        missionState = (settings.missionProfile == 2) ? AUTON_SURFACE : AUTON_SWIM_FWD;
+        if (settings.missionProfile == 2) { // dive_only
+          missionState = AUTON_SURFACE;
+          CLIEngine::log(CLIEngine::Level::STATE, "AUTON", "[TAHAP 6/6] MUNCUL KE PERMUKAAN (Soft Surface Landing)...");
+        } else {
+          missionState = AUTON_SWIM_FWD;
+          CLIEngine::log(CLIEngine::Level::STATE, "AUTON", "[TAHAP 2/6] BERENANG MAJU selama %u s pada daya %u%% (Heading hold %.1f°)...",
+                         settings.swimSec, settings.swimPower, referenceHeadingDeg);
+        }
       }
       break;
     }
@@ -1261,7 +1268,9 @@ void updateCalibration(uint32_t now) {
     // Smart Auto-Run check
     if (settings.autorun == 1 && !autorunCancelled) {
       CLIEngine::log(CLIEngine::Level::STATE, "AUTON", "[AUTORUN] Memulai hitung mundur peluncuran otonom (%u detik)...", settings.startDelaySec);
-      startAutonomousMission();
+      if (!startAutonomousMission()) {
+        missionState = MISSION_IDLE;
+      }
     } else {
       missionState = MISSION_IDLE;
       CLIEngine::log(CLIEngine::Level::INFO, "SYS", "AUV dalam posisi STANDBY (Active Balancing siap). Ketik 'run' untuk meluncur.");
@@ -1288,11 +1297,14 @@ bool cliStartMotorTest(uint8_t id, int16_t pulseOrPercent, String& errorMsg) {
     pulse = static_cast<uint16_t>(pulseOrPercent);
   } else if (pulseOrPercent >= -100 && pulseOrPercent <= 100) {
     const float frac = pulseOrPercent / 100.0f;
+    int32_t delta = 0;
     if (frac >= 0.0f) {
-      pulse = settings.pulseNeutral[id - 1] + static_cast<uint16_t>(frac * (settings.pulseMax[id - 1] - settings.pulseNeutral[id - 1]));
+      delta = lroundf(frac * (settings.pulseMax[id - 1] - settings.pulseNeutral[id - 1]));
     } else {
-      pulse = settings.pulseNeutral[id - 1] + static_cast<uint16_t>(frac * (settings.pulseNeutral[id - 1] - settings.pulseMin[id - 1]));
+      delta = lroundf(frac * (settings.pulseNeutral[id - 1] - settings.pulseMin[id - 1]));
     }
+    int32_t calcPulse = static_cast<int32_t>(settings.pulseNeutral[id - 1]) + delta;
+    pulse = static_cast<uint16_t>(constrain(calcPulse, static_cast<int32_t>(settings.pulseMin[id - 1]), static_cast<int32_t>(settings.pulseMax[id - 1])));
   } else {
     errorMsg = "Value must be pulse (800-2200us) or percent (-100 to 100).";
     return false;

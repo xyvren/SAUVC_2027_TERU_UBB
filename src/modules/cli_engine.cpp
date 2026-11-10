@@ -807,17 +807,24 @@ String executeCommand(const String& cmdLine, bool isWeb) {
   // Ring-buffer & Serial broadcast of executed command
   log(Level::CMD, "CLI", "%s%s", isWeb ? "[WEB] " : "[SER] ", cmd.c_str());
 
-  // Any command executed by operator cancels smart auto-run countdown
-  if (sysCtx.cancelAutorun) {
-    sysCtx.cancelAutorun();
-  }
-
   String tokens[10];
   const size_t tokenCount = tokenize(cmd, tokens, 10);
   if (tokenCount == 0) return "";
 
   String root = tokens[0];
   root.toLowerCase();
+
+  // Smart Auto-Run cancellation: Only explicit control/stop/override commands cancel autorun countdown.
+  // Passive informational commands (status, help, ?, get, thrusters, log, blackbox) do NOT cancel autorun.
+  const bool isControlCmd = (root == "stop" || root == "disarm" || root == "cancel" ||
+                             root == "test" || root == "set" || root == "run" ||
+                             root == "thruster" || root == "calib" || root == "esc_calib" ||
+                             root == "sim" || root == "reboot" || root == "selftest" ||
+                             (root == "autorun" && tokenCount > 1) ||
+                             (isKnownParam(root) && tokenCount > 1));
+  if (isControlCmd && sysCtx.cancelAutorun) {
+    sysCtx.cancelAutorun();
+  }
 
   // 1. HELP / ?
   if (root == "help" || root == "?") {
@@ -844,8 +851,8 @@ String executeCommand(const String& cmdLine, bool isWeb) {
     }
   }
 
-  // 4. STOP (Emergency stop)
-  if (root == "stop") {
+  // 4. STOP / DISARM / CANCEL (Emergency stop)
+  if (root == "stop" || root == "disarm" || root == "cancel") {
     if (sysCtx.stopAllThrusters) {
       sysCtx.stopAllThrusters();
     }
