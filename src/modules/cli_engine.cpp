@@ -188,6 +188,15 @@ size_t getLogCount() {
 
 namespace {
 
+String getHelpText();
+String getStatusReport();
+String getConfigurationSummary();
+String getThrusterTable();
+String exportConfigJson();
+String handleGetCommand(const String& param);
+String handleSetCommand(const String tokens[], size_t tokenCount);
+String handleThrusterCommand(const String tokens[], size_t tokenCount);
+
 String getHelpText() {
   return String(
     "=== AUV SAUVAC COMMAND HELP ===\r\n"
@@ -208,7 +217,8 @@ String getHelpText() {
     "THRUSTERS:\r\n"
     "  thrusters                  - Display 6-thruster configuration table\r\n"
     "  thruster <id> <prop> <val> - Configure thruster (min/max/neutral/reverse/rev_boost)\r\n"
-    "  test motor <id> <pwm/%>    - Test single motor for 2s (e.g. 'test motor 1 20%')\r\n"
+    "  set thruster <id> <p> <v>  - Configure thruster (alias for 'thruster ...')\r\n"
+    "  test motor <id> <pwm/%>    - Test single motor for 2s (alias: 'tes motor')\r\n"
     "  esc_calib <start/cancel>   - Calibrate ESC throttle range (1000-2000 us)\r\n\r\n"
     "CALIBRATION & SIMULATION:\r\n"
     "  calib zero                 - Zero depth sensor at current surface pressure\r\n"
@@ -497,13 +507,36 @@ String handleSetCommand(const String tokens[], size_t tokenCount) {
     return "ERROR: SystemContext not initialized.";
   }
 
-  if (tokenCount < 3) {
-    return "ERROR: Usage: set <param> <value> or set pid <depth/roll/yaw> <kp> <ki> <kd>";
+  if (tokenCount < 2) {
+    return "ERROR: Usage: set <param> <value>, set pid <subsystem> <kp> <ki> <kd>, or set thruster <id> <prop> <val>";
   }
 
   ROVConfig::Settings* s = sysCtx.settings;
   String param = tokens[1];
   param.toLowerCase();
+
+  // Forward 'set thrusters' to display table
+  if (param == "thrusters") {
+    return getThrusterTable();
+  }
+
+  // Forward 'set thruster <id> <prop> <val>' to handleThrusterCommand
+  if (param == "thruster") {
+    if (tokenCount < 5) {
+      return "ERROR: Usage: set thruster <id 1-6> <min/max/neutral/reverse/rev_boost> <val>";
+    }
+    String thrusterTokens[10];
+    thrusterTokens[0] = "thruster";
+    for (size_t i = 2; i < tokenCount && i < 10; ++i) {
+      thrusterTokens[i - 1] = tokens[i];
+    }
+    return handleThrusterCommand(thrusterTokens, tokenCount - 1);
+  }
+
+  if (tokenCount < 3) {
+    return "ERROR: Usage: set <param> <value> or set pid <depth/roll/yaw> <kp> <ki> <kd>";
+  }
+
   String valStr = tokens[2];
 
   // Special case: set pid <subsystem> <kp> <ki> <kd>
@@ -748,6 +781,10 @@ String handleThrusterCommand(const String tokens[], size_t tokenCount) {
     return "ERROR: SystemContext not initialized.";
   }
 
+  if (tokenCount < 2) {
+    return getThrusterTable();
+  }
+
   if (tokenCount < 4) {
     return "ERROR: Usage: thruster <id 1-6> <min/max/neutral/reverse/rev_boost> <val>";
   }
@@ -817,7 +854,7 @@ String executeCommand(const String& cmdLine, bool isWeb) {
   // Smart Auto-Run cancellation: Only explicit control/stop/override commands cancel autorun countdown.
   // Passive informational commands (status, help, ?, get, thrusters, log, blackbox) do NOT cancel autorun.
   const bool isControlCmd = (root == "stop" || root == "disarm" || root == "cancel" ||
-                             root == "test" || root == "set" || root == "run" ||
+                             root == "test" || root == "tes" || root == "set" || root == "run" ||
                              root == "thruster" || root == "calib" || root == "esc_calib" ||
                              root == "sim" || root == "reboot" || root == "selftest" ||
                              (root == "autorun" && tokenCount > 1) ||
@@ -927,16 +964,23 @@ String executeCommand(const String& cmdLine, bool isWeb) {
     return response;
   }
 
-  // 12. TEST MOTOR <id> <pwm/percent>
-  if (root == "test") {
-    if (tokenCount < 4 || tokens[1].equalsIgnoreCase("motor") == false) {
-      return "ERROR: Usage: test motor <id 1-6> <pwm or percent>";
+  // 12. TEST / TES MOTOR <id> <pwm/percent>
+  if (root == "test" || root == "tes") {
+    int id = 0;
+    String valStr;
+    if (tokenCount >= 4 && tokens[1].equalsIgnoreCase("motor")) {
+      id = tokens[2].toInt();
+      valStr = tokens[3];
+    } else if (tokenCount >= 3 && tokens[1].toInt() >= 1 && tokens[1].toInt() <= static_cast<int>(ROVConfig::THRUSTER_COUNT)) {
+      id = tokens[1].toInt();
+      valStr = tokens[2];
+    } else {
+      return "ERROR: Usage: test motor <id 1-6> <pwm or percent> (or 'tes motor ...')";
     }
-    const int id = tokens[2].toInt();
+
     if (id < 1 || id > static_cast<int>(ROVConfig::THRUSTER_COUNT)) {
       return "ERROR: Thruster ID must be 1 to 6.";
     }
-    String valStr = tokens[3];
     int16_t pulseOrPercent = 0;
     if (valStr.endsWith("%")) {
       pulseOrPercent = valStr.substring(0, valStr.length() - 1).toInt();

@@ -111,7 +111,7 @@ constexpr float VSYS_DIVIDER_MULTIPLIER = 3.0f;
 constexpr uint8_t DEFAULT_THRUSTER_PINS[THRUSTER_COUNT] = {2, 3, 4, 5, 6, 7};
 
 // Mixer row order: T1 rear-left (CW), T2 front-right (CW), T3 front-left (CCW),
-// T4 rear-right (CCW), T5 middle-right vertical (CW), T6 middle-left vertical (CCW).
+// T4 rear-right (CCW), T5 middle-right vertical (CCW), T6 middle-left vertical (CW).
 // Column order: surge, sway, heave, yaw, pitch, roll.
 // Positive roll raises the right side: T5 is right and T6 is left.
 constexpr float DEFAULT_MIX[THRUSTER_COUNT][AXIS_COUNT] = {

@@ -254,8 +254,8 @@ Robot menggunakan konfigurasi 6 unit pendorong *brushless* dengan tata letak geo
 | **T2** | Depan Kanan (*Bow Starboard*) | CW (Kuning) | **GP3** | 50 Hz | 1500 µs | 1000 – 2000 µs | Surge (+), Sway (-), Yaw (+) |
 | **T3** | Depan Kiri (*Bow Port*) | CCW (Biru) | **GP4** | 50 Hz | 1500 µs | 1000 – 2000 µs | Surge (+), Sway (+), Yaw (-) |
 | **T4** | Belakang Kanan (*Aft Starboard*)| CCW (Biru) | **GP5** | 50 Hz | 1500 µs | 1000 – 2000 µs | Surge (+), Sway (+), Yaw (+) |
-| **T5** | Lambung Kanan Vertikal | CW (Hijau) | **GP6** | 50 Hz | 1500 µs | 1000 – 2000 µs | Heave (+ Selam), Roll (+ Kanan) |
-| **T6** | Lambung Kiri Vertikal | CCW (Hijau) | **GP7** | 50 Hz | 1500 µs | 1000 – 2000 µs | Heave (+ Selam), Roll (- Kiri) |
+| **T5** | Lambung Kanan Vertikal | CCW (Biru) | **GP6** | 50 Hz | 1500 µs | 1000 – 2000 µs | Heave (+ Selam), Roll (+ Kanan) |
+| **T6** | Lambung Kiri Vertikal | CW (Kuning) | **GP7** | 50 Hz | 1500 µs | 1000 – 2000 µs | Heave (+ Selam), Roll (- Kiri) |
 
 > 💡 **Parameter Inversi Digital (`reverse`):**  
 > Setiap motor T1 hingga T6 mendukung pembalikan arah rotasi digital via terminal: `thruster <id> reverse <0/1>` (0 = rotasi normal, 1 = arah terbalik) lalu `save` ke EEPROM. Fitur ini memungkinkan penyesuaian arah dorongan langsung dari poolside tanpa membuka kompartemen untuk menukar kabel 3-fase motor.
@@ -358,7 +358,8 @@ Sistem merespons perintah yang sama baik melalui Web Terminal Wi-Fi maupun USB S
 | `calib zero` | Menolkan referensi tekanan sensor kedalaman di permukaan air. | - |
 | `calib ballast`| Mengukur gaya apung vertikal dan menyimpannya ke `heave_bias`. | - |
 | `sim <on/off>` | Mengaktifkan mode simulasi meja (kedalaman virtual, daya aman 3%). | on / off (Default: `off`) |
-| `test motor <id> <%|pwm>` | Memutar satu motor selama 2 detik untuk verifikasi arah fisik. | Motor Id: 1 s.d. 6 |
+| `test/tes motor <id> <%|pwm>` | Memutar satu motor selama 2 detik untuk verifikasi arah fisik. | Motor Id: 1 s.d. 6 |
+| `thruster / set thruster` | Mengatur parameter individual motor (`min`, `max`, `reverse`, dll). | Id: 1 s.d. 6 |
 | `log dump` | Menampilkan rekaman seluruh peristiwa audit dengan stempel waktu. | Maks 80 entri |
 | `save` | Menyimpan seluruh perubahan parameter dari RAM ke EEPROM permanen. | - |
 | `reboot` | Memulai ulang mikrokontroler Raspberry Pi Pico W secara halus. | - |

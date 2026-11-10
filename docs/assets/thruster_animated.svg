@@ -217,48 +217,50 @@
     <text x="10" y="66" font-family="'Segoe UI', sans-serif" font-size="9.5" fill="#fde68a">Baling-baling CW (Kuning) • 1000–2000µs</text>
   </g>
 
-  <!-- THRUSTER T6: TENGAH KIRI VERTIKAL (Mid Port) - CCW -->
+  <!-- THRUSTER T6: TENGAH KIRI VERTIKAL (Mid Port) - CW -->
   <g transform="translate(320, 340)">
-    <rect x="-18" y="-30" width="36" height="60" rx="8" fill="#072b22" stroke="#10b981" stroke-width="2" />
-    <!-- Vertical Propeller Ring & Blade -->
-    <g class="spin-ccw">
-      <circle cx="0" cy="0" r="13" fill="none" stroke="#10b981" stroke-width="2" />
-      <line x1="-10" y1="0" x2="10" y2="0" stroke="#34d399" stroke-width="2.5" />
-      <line x1="0" y1="-10" x2="0" y2="10" stroke="#34d399" stroke-width="2.5" />
+    <rect x="-18" y="-30" width="36" height="60" rx="8" fill="#2b2307" stroke="#ffd166" stroke-width="2" />
+    <!-- Vertical Propeller Ring & Blade (CW) -->
+    <g class="spin-cw">
+      <circle cx="0" cy="0" r="13" fill="none" stroke="#ffd166" stroke-width="2" />
+      <line x1="-10" y1="0" x2="10" y2="0" stroke="#ffd166" stroke-width="2.5" />
+      <line x1="0" y1="-10" x2="0" y2="10" stroke="#ffd166" stroke-width="2.5" />
     </g>
     <!-- Vertical Depth Icon (Down arrow into water) -->
-    <circle cx="0" cy="0" r="4" fill="#10b981" />
+    <circle cx="0" cy="0" r="4" fill="#ffd166" />
   </g>
   <!-- Callout Card T6 -->
   <g transform="translate(50, 305)">
-    <rect width="210" height="74" rx="8" fill="#071b2d" stroke="#10b981" stroke-width="1.4" />
-    <rect x="0" y="0" width="210" height="22" rx="8" fill="#0a3c2c" />
-    <text x="10" y="15" font-family="'Segoe UI', 'Consolas', monospace" font-size="11" font-weight="800" fill="#34d399">T6 • VERTIKAL KIRI (CCW)</text>
-    <text x="200" y="15" font-family="'Segoe UI', 'Consolas', monospace" font-size="11" font-weight="800" fill="#34d399" text-anchor="end">GP7</text>
-    <text x="10" y="38" font-family="'Segoe UI', sans-serif" font-size="10" fill="#a7f3d0">Pendorong Vertikal Murni (Heave)</text>
+    <rect width="210" height="74" rx="8" fill="#071b2d" stroke="#ffd166" stroke-width="1.4" />
+    <rect x="0" y="0" width="210" height="22" rx="8" fill="#4d3700" />
+    <text x="10" y="15" font-family="'Segoe UI', 'Consolas', monospace" font-size="11" font-weight="800" fill="#ffd166">T6 • VERTIKAL KIRI (CW)</text>
+    <text x="200" y="15" font-family="'Segoe UI', 'Consolas', monospace" font-size="11" font-weight="800" fill="#ffd166" text-anchor="end">GP7</text>
+    <text x="10" y="38" font-family="'Segoe UI', sans-serif" font-size="10" fill="#fde68a">Pendorong Vertikal Murni (Heave)</text>
     <text x="10" y="52" font-family="'Segoe UI', sans-serif" font-size="10" fill="#94a3b8">Sumbu: Heave (+ Selam), Roll (- Kiri)</text>
-    <text x="10" y="66" font-family="'Segoe UI', sans-serif" font-size="9.5" fill="#fde68a">Baling-baling CCW (Hijau) • PID Kedalaman</text>
+    <text x="10" y="66" font-family="'Segoe UI', sans-serif" font-size="9.5" fill="#fde68a">Baling-baling CW (Kuning) • PID Kedalaman</text>
   </g>
 
-  <!-- THRUSTER T5: TENGAH KANAN VERTIKAL (Mid Starboard) - CW -->
+  <!-- THRUSTER T5: TENGAH KANAN VERTIKAL (Mid Starboard) - CCW -->
   <g transform="translate(680, 340)">
-    <rect x="-18" y="-30" width="36" height="60" rx="8" fill="#072b22" stroke="#10b981" stroke-width="2" />
-    <g class="spin-cw">
-      <circle cx="0" cy="0" r="13" fill="none" stroke="#10b981" stroke-width="2" />
-      <line x1="-10" y1="0" x2="10" y2="0" stroke="#34d399" stroke-width="2.5" />
-      <line x1="0" y1="-10" x2="0" y2="10" stroke="#34d399" stroke-width="2.5" />
+    <rect x="-18" y="-30" width="36" height="60" rx="8" fill="#0b243e" stroke="#38bdf8" stroke-width="2" />
+    <!-- Vertical Propeller Ring & Blade (CCW) -->
+    <g class="spin-ccw">
+      <circle cx="0" cy="0" r="13" fill="none" stroke="#38bdf8" stroke-width="2" />
+      <line x1="-10" y1="0" x2="10" y2="0" stroke="#00f5d4" stroke-width="2.5" />
+      <line x1="0" y1="-10" x2="0" y2="10" stroke="#00f5d4" stroke-width="2.5" />
     </g>
-    <circle cx="0" cy="0" r="4" fill="#10b981" />
+    <!-- Vertical Depth Icon (Down arrow into water) -->
+    <circle cx="0" cy="0" r="4" fill="#00f5d4" />
   </g>
   <!-- Callout Card T5 -->
   <g transform="translate(740, 305)">
-    <rect width="210" height="74" rx="8" fill="#071b2d" stroke="#10b981" stroke-width="1.4" />
-    <rect x="0" y="0" width="210" height="22" rx="8" fill="#0a3c2c" />
-    <text x="10" y="15" font-family="'Segoe UI', 'Consolas', monospace" font-size="11" font-weight="800" fill="#34d399">T5 • VERTIKAL KANAN (CW)</text>
-    <text x="200" y="15" font-family="'Segoe UI', 'Consolas', monospace" font-size="11" font-weight="800" fill="#34d399" text-anchor="end">GP6</text>
-    <text x="10" y="38" font-family="'Segoe UI', sans-serif" font-size="10" fill="#a7f3d0">Pendorong Vertikal Murni (Heave)</text>
+    <rect width="210" height="74" rx="8" fill="#071b2d" stroke="#38bdf8" stroke-width="1.4" />
+    <rect x="0" y="0" width="210" height="22" rx="8" fill="#0d355c" />
+    <text x="10" y="15" font-family="'Segoe UI', 'Consolas', monospace" font-size="11" font-weight="800" fill="#38bdf8">T5 • VERTIKAL KANAN (CCW)</text>
+    <text x="200" y="15" font-family="'Segoe UI', 'Consolas', monospace" font-size="11" font-weight="800" fill="#00f5d4" text-anchor="end">GP6</text>
+    <text x="10" y="38" font-family="'Segoe UI', sans-serif" font-size="10" fill="#bae6fd">Pendorong Vertikal Murni (Heave)</text>
     <text x="10" y="52" font-family="'Segoe UI', sans-serif" font-size="10" fill="#94a3b8">Sumbu: Heave (+ Selam), Roll (+ Kanan)</text>
-    <text x="10" y="66" font-family="'Segoe UI', sans-serif" font-size="9.5" fill="#fde68a">Baling-baling CW (Hijau) • PID Kedalaman</text>
+    <text x="10" y="66" font-family="'Segoe UI', sans-serif" font-size="9.5" fill="#bae6fd">Baling-baling CCW (Biru) • PID Kedalaman</text>
   </g>
 
   <!-- THRUSTER T1: BELAKANG KIRI (Aft Port) - 45° CW -->

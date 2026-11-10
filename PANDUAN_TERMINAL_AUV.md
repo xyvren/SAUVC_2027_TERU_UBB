@@ -83,7 +83,7 @@ AUV SAUVAC menggunakan konfigurasi 6 unit pendorong *brushless* kedap air: 4 pen
                [T6] ─────────────────── [T5]
             Tengah Kiri              Tengah Kanan
              (Vertikal)              (Vertikal)
-            CCW (Hijau)              CW (Hijau)
+            CW (Kuning)              CCW (Biru)
              GPIO GP7                 GPIO GP6
                              │
                [T1] ─────────────────── [T4]
@@ -101,8 +101,8 @@ AUV SAUVAC menggunakan konfigurasi 6 unit pendorong *brushless* kedap air: 4 pen
 | **T2** | Depan Kanan | **GP3** | CW (Kuning) | 1500 µs | 1000 – 2000 µs | Surge (+), Sway (-), Yaw (+) |
 | **T3** | Depan Kiri | **GP4** | CCW (Biru) | 1500 µs | 1000 – 2000 µs | Surge (+), Sway (+), Yaw (-) |
 | **T4** | Belakang Kanan| **GP5** | CCW (Biru) | 1500 µs | 1000 – 2000 µs | Surge (+), Sway (+), Yaw (+) |
-| **T5** | Vertikal Kanan| **GP6** | CW (Hijau) | 1500 µs | 1000 – 2000 µs | Heave (+ Menyelam), Roll (+ Kanan Turun) |
-| **T6** | Vertikal Kiri | **GP7** | CCW (Hijau)| 1500 µs | 1000 – 2000 µs | Heave (+ Menyelam), Roll (- Kiri Turun) |
+| **T5** | Vertikal Kanan| **GP6** | CCW (Biru) | 1500 µs | 1000 – 2000 µs | Heave (+ Menyelam), Roll (+ Kanan Turun) |
+| **T6** | Vertikal Kiri | **GP7** | CW (Kuning)| 1500 µs | 1000 – 2000 µs | Heave (+ Menyelam), Roll (- Kiri Turun) |
 
 ---
 
@@ -283,7 +283,7 @@ Sistem parsing baris perintah v1.0 dirancang sangat fleksibel:
 | :--- | :--- | :---: | :---: | :--- |
 | **`rev_boost <factor>`** | Pengali tenaga digital dorongan mundur agar tenaga maju & mundur 1:1.| 1.00 – 2.50 | **1.30** | `rev_boost 1.3`<br>`set rev_boost 1.35` |
 | **`thrusters`** | Menampilkan tabel status konfigurasi lengkap 6 unit thruster. | - | - | `thrusters` |
-| **`thruster <id> <prop> <val>`**| Mengatur parameter individual motor: `min`, `max`, `neutral`, `reverse`, `rev_boost`.| Id: 1–6 | Variatif | `thruster 1 rev_boost 1.35`<br>`thruster 2 reverse 1` |
+| **`thruster <id> <prop> <val>`**| Mengatur parameter individual motor: `min`, `max`, `neutral`, `reverse`, `rev_boost` (alias: `set thruster ...`).| Id: 1–6 | Variatif | `thruster 1 rev_boost 1.35`<br>`thruster 2 reverse 1`<br>`set thruster 5 reverse 1` |
 | **`deadband <us>`** | Lebar zona mati pulsa di sekitar titik netral 1500 µs. | 0 – 100 µs | **25 µs** | `deadband 25`<br>`set deadband 20` |
 | **`esc_calib <start/cancel>`**| Menjalankan prosedur kalibrasi rentang pulsa throttle ESC (1000–2000 µs).| `start`, `cancel` | - | `esc_calib start` |
 
@@ -292,8 +292,8 @@ Setiap thruster T1 sampai T6 mendukung parameter `reverse` digital tanpa perlu m
 - **`thruster <id> reverse 0`**: Arah putaran normal (default).
 - **`thruster <id> reverse 1`**: Membalik arah vektor dorongan motor secara matematis pada firmware (maju menjadi mundur, dan sebaliknya).
 - **Contoh Perintah:**
-  - `thruster 5 reverse 0` (T5 Tengah Kanan Vertikal - CW normal)
-  - `thruster 6 reverse 0` (T6 Tengah Kiri Vertikal - CCW normal)
+  - `thruster 5 reverse 0` (T5 Tengah Kanan Vertikal - CCW normal)
+  - `thruster 6 reverse 0` (T6 Tengah Kiri Vertikal - CW normal)
   - `save` (Simpan konfigurasi ke memori EEPROM v1.0)
 - **Kegunaan di Lapangan:** Sangat krusial jika baling-baling motor menghasilkan dorongan terbalik di air atau orientasi kabel phase motor terpasang berlawanan, sehingga operator poolside dapat membalik arah dorong seketika via terminal tanpa perlu membongkar kompartemen kedap air.
 
@@ -327,7 +327,7 @@ Setiap thruster T1 sampai T6 mendukung parameter `reverse` digital tanpa perlu m
 | **`log dump`** | Menampilkan seluruh isi riwayat ring-buffer log ke layar terminal. | - | `log dump` |
 | **`log clear`** | Mengosongkan memori buffer riwayat log peristiwa. | - | `log clear` |
 | **`sim <on/off>`** | Mengaktifkan/mematikan mode simulasi meja (kedalaman virtual, daya 3%). | `on`, `off` | `sim on`<br>`sim off` |
-| **`test motor <id> <pwm/%>`**| Memutar satu motor tertentu selama 2.0 detik untuk uji arah putaran fisik.| Id: 1–6, Pwm/Persen| `test motor 1 20%`<br>`test motor 5 1550` |
+| **`test motor <id> <pwm/%>`**| Memutar satu motor tertentu selama 2.0 detik untuk uji arah putaran fisik (alias: `tes motor` atau `/tes motor`).| Id: 1–6, Pwm/Persen| `test motor 1 20%`<br>`tes motor 6 30`<br>`/tes motor 6 30` |
 | **`reboot`** | Memulai ulang (*soft-restart*) mikrokontroler Raspberry Pi Pico W. | - | `reboot` |
 
 ---

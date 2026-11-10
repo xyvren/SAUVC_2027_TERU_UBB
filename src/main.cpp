@@ -880,8 +880,8 @@ bool cliRunSelfTest(String& response) {
   response += "Thruster T2 (GP3)   " + String(outputsReady && thrusters[1].attached() ? "PASS" : "FAIL") + "      Pulse 0.2s OK (CW)\r\n";
   response += "Thruster T3 (GP4)   " + String(outputsReady && thrusters[2].attached() ? "PASS" : "FAIL") + "      Pulse 0.2s OK (CCW)\r\n";
   response += "Thruster T4 (GP5)   " + String(outputsReady && thrusters[3].attached() ? "PASS" : "FAIL") + "      Pulse 0.2s OK (CCW)\r\n";
-  response += "Thruster T5 (GP6)   " + String(outputsReady && thrusters[4].attached() ? "PASS" : "FAIL") + "      Pulse 0.2s OK (CW)\r\n";
-  response += "Thruster T6 (GP7)   " + String(outputsReady && thrusters[5].attached() ? "PASS" : "FAIL") + "      Pulse 0.2s OK (CCW)\r\n";
+  response += "Thruster T5 (GP6)   " + String(outputsReady && thrusters[4].attached() ? "PASS" : "FAIL") + "      Pulse 0.2s OK (CCW)\r\n";
+  response += "Thruster T6 (GP7)   " + String(outputsReady && thrusters[5].attached() ? "PASS" : "FAIL") + "      Pulse 0.2s OK (CW)\r\n";
   response += "--------------------------------------------------\r\n";
   if (allPass) {
     response += "OVERALL STATUS: ALL CHECKS PASSED (GO FOR LAUNCH)\r\n";
