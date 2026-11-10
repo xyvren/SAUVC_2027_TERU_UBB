@@ -1,0 +1,342 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="100%" height="660" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgHull" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#040d1a" />
+      <stop offset="50%" stop-color="#081e36" />
+      <stop offset="100%" stop-color="#030c18" />
+    </linearGradient>
+
+    <!-- Acrylic Cylinder Gradient -->
+    <linearGradient id="acrylicGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1e3a5f" stop-opacity="0.8" />
+      <stop offset="25%" stop-color="#38bdf8" stop-opacity="0.4" />
+      <stop offset="70%" stop-color="#0e2a47" stop-opacity="0.7" />
+      <stop offset="100%" stop-color="#1e3a5f" stop-opacity="0.8" />
+    </linearGradient>
+
+    <!-- Glowing Filters -->
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3.5" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <filter id="glowGold" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3.5" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <!-- Blueprint Grid -->
+    <pattern id="gridPattern" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#00f5d4" stroke-width="0.4" opacity="0.08" />
+    </pattern>
+
+    <!-- Animations -->
+    <style>
+      @keyframes spinCW {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      @keyframes spinCCW {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(-360deg); }
+      }
+      @keyframes vectorPulse {
+        0%, 100% { opacity: 0.35; stroke-dashoffset: 0; }
+        50% { opacity: 1; stroke-dashoffset: -14; }
+      }
+      @keyframes surgeWave {
+        0%, 100% { transform: translateY(0); opacity: 0.65; }
+        50% { transform: translateY(-8px); opacity: 1; }
+      }
+      .spin-cw {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: spinCW 2s linear infinite;
+      }
+      .spin-ccw {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: spinCCW 2s linear infinite;
+      }
+      .vec-anim {
+        stroke-dasharray: 6 4;
+        animation: vectorPulse 1.4s linear infinite;
+      }
+      .surge-anim {
+        animation: surgeWave 2s ease-in-out infinite;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; }
+      }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1000" height="660" rx="14" fill="url(#bgHull)" stroke="#1e3a5f" stroke-width="1.5" />
+  <rect width="1000" height="660" rx="14" fill="url(#gridPattern)" />
+
+  <!-- Outer Blueprint Border Frame -->
+  <rect x="15" y="15" width="970" height="630" rx="10" fill="none" stroke="#00f5d4" stroke-width="1" opacity="0.3" />
+
+  <!-- Header Banner -->
+  <g transform="translate(50, 42)">
+    <text x="0" y="0" font-family="'Segoe UI', 'Consolas', sans-serif" font-size="16" font-weight="900" letter-spacing="2" fill="#ffffff">
+      DIAGRAM VEKTOR &amp; TATA LETAK 6 THRUSTER V6 (TAMPAK ATAS)
+    </text>
+    <text x="0" y="18" font-family="'Segoe UI', 'Consolas', sans-serif" font-size="11" fill="#94a3b8">
+      Arsitektur Vektor Pola-X 45° (Surge, Sway, Yaw) + 2 Pendorong Vertikal Lambung Tengah (Heave, Roll)
+    </text>
+    <line x1="0" y1="28" x2="900" y2="28" stroke="#1e3a5f" stroke-width="1" />
+  </g>
+
+  <!-- Forward Direction Indicator (HALUAN DEPAN ▲) -->
+  <g transform="translate(500, 105)" class="surge-anim">
+    <path d="M 0 -22 L 14 0 L -14 0 Z" fill="#00f5d4" filter="url(#glowCyan)" />
+    <line x1="0" y1="0" x2="0" y2="24" stroke="#00f5d4" stroke-width="3" />
+    <text x="0" y="-28" font-family="'Segoe UI', 'Consolas', monospace" font-size="11" font-weight="800" letter-spacing="2" fill="#00f5d4" text-anchor="middle">
+      HALUAN DEPAN (FORWARD ▲)
+    </text>
+  </g>
+
+  <!-- Port & Starboard Identifiers -->
+  <g transform="translate(240, 120)">
+    <rect x="-45" y="-12" width="90" height="22" rx="4" fill="#0c2338" stroke="#38bdf8" stroke-width="1" />
+    <text x="0" y="3" font-family="'Segoe UI', 'Consolas', monospace" font-size="10" font-weight="700" fill="#38bdf8" text-anchor="middle">◄ PORT (KIRI)</text>
+  </g>
+  <g transform="translate(760, 120)">
+    <rect x="-55" y="-12" width="110" height="22" rx="4" fill="#0c2338" stroke="#10b981" stroke-width="1" />
+    <text x="0" y="3" font-family="'Segoe UI', 'Consolas', monospace" font-size="10" font-weight="700" fill="#10b981" text-anchor="middle">STARBOARD (KANAN) ►</text>
+  </g>
+
+  <!-- ================= VEHICLE CHASSIS & HULL (TAMPAK ATAS) ================= -->
+  <!-- Outer Aluminum Sub-chassis -->
+  <g transform="translate(500, 340)">
+    <!-- Main Frame Outline: 260w x 360h -->
+    <rect x="-130" y="-180" width="260" height="360" rx="30" fill="#071b2d" stroke="#38bdf8" stroke-width="2" opacity="0.85" />
+    
+    <!-- Cross Braces -->
+    <line x1="-130" y1="-70" x2="130" y2="-70" stroke="#1e3a5f" stroke-width="3" />
+    <line x1="-130" y1="70" x2="130" y2="70" stroke="#1e3a5f" stroke-width="3" />
+    <line x1="0" y1="-180" x2="0" y2="180" stroke="#1e3a5f" stroke-width="1.5" stroke-dasharray="4 4" />
+
+    <!-- Twin Cylindrical Acrylic Pressure Vessels (Hull Tabung Akrilik Ganda) -->
+    <!-- Left Cylinder (Electronics & Sensor Enclosure) -->
+    <rect x="-95" y="-140" width="80" height="280" rx="16" fill="url(#acrylicGrad)" stroke="#38bdf8" stroke-width="1.5" />
+    <text x="-55" y="-10" font-family="'Segoe UI', 'Consolas', monospace" font-size="9" font-weight="700" fill="#bae6fd" text-anchor="middle" transform="rotate(-90, -55, -10)">
+      TABUNG ELEKTRONIK &amp; PICO W
+    </text>
+
+    <!-- Right Cylinder (Battery & Power Management Enclosure) -->
+    <rect x="15" y="-140" width="80" height="280" rx="16" fill="url(#acrylicGrad)" stroke="#ffd166" stroke-width="1.5" />
+    <text x="55" y="-10" font-family="'Segoe UI', 'Consolas', monospace" font-size="9" font-weight="700" fill="#fde68a" text-anchor="middle" transform="rotate(90, 55, -10)">
+      TABUNG BATERAI &amp; POWER BUS
+    </text>
+
+    <!-- Center Hydrostatic Markers: CG (Center of Gravity) & CB (Center of Buoyancy) -->
+    <g transform="translate(0, 0)">
+      <!-- CB (Buoyancy - Cyan Circle) -->
+      <circle cx="0" cy="-20" r="10" fill="#00f5d4" opacity="0.3" />
+      <circle cx="0" cy="-20" r="4" fill="#00f5d4" />
+      <text x="0" y="-32" font-family="'Segoe UI', monospace" font-size="8" font-weight="700" fill="#00f5d4" text-anchor="middle">CB (Buoyancy)</text>
+
+      <!-- CG (Gravity - Gold Circle) -->
+      <circle cx="0" cy="20" r="10" fill="#ffd166" opacity="0.3" />
+      <circle cx="0" cy="20" r="4" fill="#ffd166" />
+      <text x="0" y="38" font-family="'Segoe UI', monospace" font-size="8" font-weight="700" fill="#ffd166" text-anchor="middle">CG (Gravity)</text>
+      
+      <!-- Hydrostatic stability vertical axis -->
+      <line x1="0" y1="-20" x2="0" y2="20" stroke="#ffffff" stroke-width="1" stroke-dasharray="2 2" />
+    </g>
+
+    <!-- Bow Camera & Sensor Dome -->
+    <path d="M -50 -180 C -40 -205, 40 -205, 50 -180 Z" fill="#0c2e4e" stroke="#00f5d4" stroke-width="2" />
+    <circle cx="0" cy="-190" r="6" fill="#38bdf8" />
+    <text x="0" y="-172" font-family="'Segoe UI', monospace" font-size="7.5" fill="#38bdf8" text-anchor="middle">MS5803 &amp; CAM</text>
+  </g>
+
+  <!-- ================= 6 THRUSTERS WITH VECTORS & LABELS ================= -->
+
+  <!-- THRUSTER T3: DEPAN KIRI (Bow Port) - 45° CCW -->
+  <g transform="translate(330, 200)">
+    <!-- Angled Mount Pod (45 deg) -->
+    <g transform="rotate(-45)">
+      <rect x="-18" y="-32" width="36" height="64" rx="8" fill="#0b243e" stroke="#38bdf8" stroke-width="2" />
+      <!-- Animated Propeller Blades (CCW) -->
+      <g class="spin-ccw">
+        <circle cx="0" cy="0" r="14" fill="none" stroke="#38bdf8" stroke-width="1.5" opacity="0.4" />
+        <line x1="-12" y1="0" x2="12" y2="0" stroke="#00f5d4" stroke-width="2.5" />
+        <line x1="0" y1="-12" x2="0" y2="12" stroke="#00f5d4" stroke-width="2.5" />
+      </g>
+      <!-- Thrust Vector Arrow -->
+      <line x1="0" y1="-32" x2="0" y2="-68" stroke="#00f5d4" stroke-width="3" class="vec-anim" filter="url(#glowCyan)" />
+      <polygon points="0,-74 -6,-64 6,-64" fill="#00f5d4" />
+    </g>
+  </g>
+  <!-- Callout Card T3 -->
+  <g transform="translate(50, 150)">
+    <rect width="210" height="74" rx="8" fill="#071b2d" stroke="#38bdf8" stroke-width="1.4" />
+    <rect x="0" y="0" width="210" height="22" rx="8" fill="#0d355c" />
+    <text x="10" y="15" font-family="'Segoe UI', 'Consolas', monospace" font-size="11" font-weight="800" fill="#38bdf8">T3 • DEPAN KIRI (CCW)</text>
+    <text x="200" y="15" font-family="'Segoe UI', 'Consolas', monospace" font-size="11" font-weight="800" fill="#00f5d4" text-anchor="end">GP4</text>
+    <text x="10" y="38" font-family="'Segoe UI', sans-serif" font-size="10" fill="#bae6fd">Vektor V6: 45° Horisontal</text>
+    <text x="10" y="52" font-family="'Segoe UI', sans-serif" font-size="10" fill="#94a3b8">Sumbu: Surge (+), Sway (+), Yaw (-)</text>
+    <text x="10" y="66" font-family="'Segoe UI', sans-serif" font-size="9.5" fill="#fde68a">Baling-baling CCW (Biru) • 1000–2000µs</text>
+  </g>
+
+  <!-- THRUSTER T2: DEPAN KANAN (Bow Starboard) - 45° CW -->
+  <g transform="translate(670, 200)">
+    <g transform="rotate(45)">
+      <rect x="-18" y="-32" width="36" height="64" rx="8" fill="#0b243e" stroke="#ffd166" stroke-width="2" />
+      <!-- Animated Propeller Blades (CW) -->
+      <g class="spin-cw">
+        <circle cx="0" cy="0" r="14" fill="none" stroke="#ffd166" stroke-width="1.5" opacity="0.4" />
+        <line x1="-12" y1="0" x2="12" y2="0" stroke="#ffd166" stroke-width="2.5" />
+        <line x1="0" y1="-12" x2="0" y2="12" stroke="#ffd166" stroke-width="2.5" />
+      </g>
+      <!-- Thrust Vector Arrow -->
+      <line x1="0" y1="-32" x2="0" y2="-68" stroke="#ffd166" stroke-width="3" class="vec-anim" filter="url(#glowGold)" />
+      <polygon points="0,-74 -6,-64 6,-64" fill="#ffd166" />
+    </g>
+  </g>
+  <!-- Callout Card T2 -->
+  <g transform="translate(740, 150)">
+    <rect width="210" height="74" rx="8" fill="#071b2d" stroke="#ffd166" stroke-width="1.4" />
+    <rect x="0" y="0" width="210" height="22" rx="8" fill="#4d3700" />
+    <text x="10" y="15" font-family="'Segoe UI', 'Consolas', monospace" font-size="11" font-weight="800" fill="#ffd166">T2 • DEPAN KANAN (CW)</text>
+    <text x="200" y="15" font-family="'Segoe UI', 'Consolas', monospace" font-size="11" font-weight="800" fill="#ffd166" text-anchor="end">GP3</text>
+    <text x="10" y="38" font-family="'Segoe UI', sans-serif" font-size="10" fill="#fde68a">Vektor V6: 45° Horisontal</text>
+    <text x="10" y="52" font-family="'Segoe UI', sans-serif" font-size="10" fill="#94a3b8">Sumbu: Surge (+), Sway (-), Yaw (+)</text>
+    <text x="10" y="66" font-family="'Segoe UI', sans-serif" font-size="9.5" fill="#fde68a">Baling-baling CW (Kuning) • 1000–2000µs</text>
+  </g>
+
+  <!-- THRUSTER T6: TENGAH KIRI VERTIKAL (Mid Port) - CCW -->
+  <g transform="translate(320, 340)">
+    <rect x="-18" y="-30" width="36" height="60" rx="8" fill="#072b22" stroke="#10b981" stroke-width="2" />
+    <!-- Vertical Propeller Ring & Blade -->
+    <g class="spin-ccw">
+      <circle cx="0" cy="0" r="13" fill="none" stroke="#10b981" stroke-width="2" />
+      <line x1="-10" y1="0" x2="10" y2="0" stroke="#34d399" stroke-width="2.5" />
+      <line x1="0" y1="-10" x2="0" y2="10" stroke="#34d399" stroke-width="2.5" />
+    </g>
+    <!-- Vertical Depth Icon (Down arrow into water) -->
+    <circle cx="0" cy="0" r="4" fill="#10b981" />
+  </g>
+  <!-- Callout Card T6 -->
+  <g transform="translate(50, 305)">
+    <rect width="210" height="74" rx="8" fill="#071b2d" stroke="#10b981" stroke-width="1.4" />
+    <rect x="0" y="0" width="210" height="22" rx="8" fill="#0a3c2c" />
+    <text x="10" y="15" font-family="'Segoe UI', 'Consolas', monospace" font-size="11" font-weight="800" fill="#34d399">T6 • VERTIKAL KIRI (CCW)</text>
+    <text x="200" y="15" font-family="'Segoe UI', 'Consolas', monospace" font-size="11" font-weight="800" fill="#34d399" text-anchor="end">GP7</text>
+    <text x="10" y="38" font-family="'Segoe UI', sans-serif" font-size="10" fill="#a7f3d0">Pendorong Vertikal Murni (Heave)</text>
+    <text x="10" y="52" font-family="'Segoe UI', sans-serif" font-size="10" fill="#94a3b8">Sumbu: Heave (+ Selam), Roll (- Kiri)</text>
+    <text x="10" y="66" font-family="'Segoe UI', sans-serif" font-size="9.5" fill="#fde68a">Baling-baling CCW (Hijau) • PID Kedalaman</text>
+  </g>
+
+  <!-- THRUSTER T5: TENGAH KANAN VERTIKAL (Mid Starboard) - CW -->
+  <g transform="translate(680, 340)">
+    <rect x="-18" y="-30" width="36" height="60" rx="8" fill="#072b22" stroke="#10b981" stroke-width="2" />
+    <g class="spin-cw">
+      <circle cx="0" cy="0" r="13" fill="none" stroke="#10b981" stroke-width="2" />
+      <line x1="-10" y1="0" x2="10" y2="0" stroke="#34d399" stroke-width="2.5" />
+      <line x1="0" y1="-10" x2="0" y2="10" stroke="#34d399" stroke-width="2.5" />
+    </g>
+    <circle cx="0" cy="0" r="4" fill="#10b981" />
+  </g>
+  <!-- Callout Card T5 -->
+  <g transform="translate(740, 305)">
+    <rect width="210" height="74" rx="8" fill="#071b2d" stroke="#10b981" stroke-width="1.4" />
+    <rect x="0" y="0" width="210" height="22" rx="8" fill="#0a3c2c" />
+    <text x="10" y="15" font-family="'Segoe UI', 'Consolas', monospace" font-size="11" font-weight="800" fill="#34d399">T5 • VERTIKAL KANAN (CW)</text>
+    <text x="200" y="15" font-family="'Segoe UI', 'Consolas', monospace" font-size="11" font-weight="800" fill="#34d399" text-anchor="end">GP6</text>
+    <text x="10" y="38" font-family="'Segoe UI', sans-serif" font-size="10" fill="#a7f3d0">Pendorong Vertikal Murni (Heave)</text>
+    <text x="10" y="52" font-family="'Segoe UI', sans-serif" font-size="10" fill="#94a3b8">Sumbu: Heave (+ Selam), Roll (+ Kanan)</text>
+    <text x="10" y="66" font-family="'Segoe UI', sans-serif" font-size="9.5" fill="#fde68a">Baling-baling CW (Hijau) • PID Kedalaman</text>
+  </g>
+
+  <!-- THRUSTER T1: BELAKANG KIRI (Aft Port) - 45° CW -->
+  <g transform="translate(330, 480)">
+    <g transform="rotate(45)">
+      <rect x="-18" y="-32" width="36" height="64" rx="8" fill="#0b243e" stroke="#ffd166" stroke-width="2" />
+      <!-- Animated Propeller Blades (CW) -->
+      <g class="spin-cw">
+        <circle cx="0" cy="0" r="14" fill="none" stroke="#ffd166" stroke-width="1.5" opacity="0.4" />
+        <line x1="-12" y1="0" x2="12" y2="0" stroke="#ffd166" stroke-width="2.5" />
+        <line x1="0" y1="-12" x2="0" y2="12" stroke="#ffd166" stroke-width="2.5" />
+      </g>
+      <!-- Thrust Vector Arrow -->
+      <line x1="0" y1="-32" x2="0" y2="-68" stroke="#ffd166" stroke-width="3" class="vec-anim" filter="url(#glowGold)" />
+      <polygon points="0,-74 -6,-64 6,-64" fill="#ffd166" />
+    </g>
+  </g>
+  <!-- Callout Card T1 -->
+  <g transform="translate(50, 460)">
+    <rect width="210" height="74" rx="8" fill="#071b2d" stroke="#ffd166" stroke-width="1.4" />
+    <rect x="0" y="0" width="210" height="22" rx="8" fill="#4d3700" />
+    <text x="10" y="15" font-family="'Segoe UI', 'Consolas', monospace" font-size="11" font-weight="800" fill="#ffd166">T1 • BELAKANG KIRI (CW)</text>
+    <text x="200" y="15" font-family="'Segoe UI', 'Consolas', monospace" font-size="11" font-weight="800" fill="#ffd166" text-anchor="end">GP2</text>
+    <text x="10" y="38" font-family="'Segoe UI', sans-serif" font-size="10" fill="#fde68a">Vektor V6: 45° Horisontal</text>
+    <text x="10" y="52" font-family="'Segoe UI', sans-serif" font-size="10" fill="#94a3b8">Sumbu: Surge (+), Sway (-), Yaw (-)</text>
+    <text x="10" y="66" font-family="'Segoe UI', sans-serif" font-size="9.5" fill="#fde68a">Baling-baling CW (Kuning) • 1000–2000µs</text>
+  </g>
+
+  <!-- THRUSTER T4: BELAKANG KANAN (Aft Starboard) - 45° CCW -->
+  <g transform="translate(670, 480)">
+    <g transform="rotate(-45)">
+      <rect x="-18" y="-32" width="36" height="64" rx="8" fill="#0b243e" stroke="#38bdf8" stroke-width="2" />
+      <!-- Animated Propeller Blades (CCW) -->
+      <g class="spin-ccw">
+        <circle cx="0" cy="0" r="14" fill="none" stroke="#38bdf8" stroke-width="1.5" opacity="0.4" />
+        <line x1="-12" y1="0" x2="12" y2="0" stroke="#00f5d4" stroke-width="2.5" />
+        <line x1="0" y1="-12" x2="0" y2="12" stroke="#00f5d4" stroke-width="2.5" />
+      </g>
+      <!-- Thrust Vector Arrow -->
+      <line x1="0" y1="-32" x2="0" y2="-68" stroke="#00f5d4" stroke-width="3" class="vec-anim" filter="url(#glowCyan)" />
+      <polygon points="0,-74 -6,-64 6,-64" fill="#00f5d4" />
+    </g>
+  </g>
+  <!-- Callout Card T4 -->
+  <g transform="translate(740, 460)">
+    <rect width="210" height="74" rx="8" fill="#071b2d" stroke="#38bdf8" stroke-width="1.4" />
+    <rect x="0" y="0" width="210" height="22" rx="8" fill="#0d355c" />
+    <text x="10" y="15" font-family="'Segoe UI', 'Consolas', monospace" font-size="11" font-weight="800" fill="#38bdf8">T4 • BELAKANG KANAN (CCW)</text>
+    <text x="200" y="15" font-family="'Segoe UI', 'Consolas', monospace" font-size="11" font-weight="800" fill="#00f5d4" text-anchor="end">GP5</text>
+    <text x="10" y="38" font-family="'Segoe UI', sans-serif" font-size="10" fill="#bae6fd">Vektor V6: 45° Horisontal</text>
+    <text x="10" y="52" font-family="'Segoe UI', sans-serif" font-size="10" fill="#94a3b8">Sumbu: Surge (+), Sway (+), Yaw (+)</text>
+    <text x="10" y="66" font-family="'Segoe UI', sans-serif" font-size="9.5" fill="#fde68a">Baling-baling CCW (Biru) • 1000–2000µs</text>
+  </g>
+
+  <!-- Buritan Belakang (AFT / STERN ▼) Indicator -->
+  <g transform="translate(500, 565)">
+    <line x1="0" y1="-16" x2="0" y2="10" stroke="#ffd166" stroke-width="2" />
+    <path d="M 0 16 L -10 2 L 10 2 Z" fill="#ffd166" />
+    <text x="0" y="30" font-family="'Segoe UI', 'Consolas', monospace" font-size="10" font-weight="700" fill="#ffd166" text-anchor="middle">
+      BURITAN BELAKANG (AFT / STERN ▼)
+    </text>
+  </g>
+
+  <!-- Bottom Legend Bar -->
+  <g transform="translate(50, 608)">
+    <rect width="900" height="34" rx="6" fill="#041224" stroke="#1e3a5f" stroke-width="1" />
+    <!-- Legend item 1 -->
+    <circle cx="25" cy="17" r="5" fill="#ffd166" />
+    <text x="36" y="21" font-family="'Segoe UI', sans-serif" font-size="10.5" fill="#e2e8f0">CW Rotation (Kuning/Gold)</text>
+    <!-- Legend item 2 -->
+    <circle cx="210" cy="17" r="5" fill="#00f5d4" />
+    <text x="221" y="21" font-family="'Segoe UI', sans-serif" font-size="10.5" fill="#e2e8f0">CCW Rotation (Biru/Cyan)</text>
+    <!-- Legend item 3 -->
+    <circle cx="395" cy="17" r="5" fill="#10b981" />
+    <text x="406" y="21" font-family="'Segoe UI', sans-serif" font-size="10.5" fill="#e2e8f0">Vertikal Heave (Hijau)</text>
+    <!-- Legend item 4 -->
+    <text x="590" y="21" font-family="'Segoe UI', 'Consolas', monospace" font-size="10" fill="#94a3b8">PWM: 50 Hz (1000–1500–2000 µs)</text>
+    <!-- Legend item 5 -->
+    <text x="790" y="21" font-family="'Segoe UI', 'Consolas', monospace" font-size="10" font-weight="700" fill="#00f5d4">rev_boost: 1.30×</text>
+  </g>
+</svg>

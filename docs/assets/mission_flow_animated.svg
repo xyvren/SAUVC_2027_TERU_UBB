@@ -1,0 +1,219 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 370" width="100%" height="370" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="flowBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#040e1b" />
+      <stop offset="50%" stop-color="#081e36" />
+      <stop offset="100%" stop-color="#041122" />
+    </linearGradient>
+
+    <!-- Node Gradient Blue -->
+    <linearGradient id="nodeBlue" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0e2a47" />
+      <stop offset="100%" stop-color="#07182b" />
+    </linearGradient>
+
+    <!-- Node Gradient Cyan Highlight -->
+    <linearGradient id="nodeActive" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#005f73" />
+      <stop offset="100%" stop-color="#0a253a" />
+    </linearGradient>
+
+    <!-- Gold Accent Gradient -->
+    <linearGradient id="goldNode" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#6b4c0b" />
+      <stop offset="100%" stop-color="#1c1606" />
+    </linearGradient>
+
+    <!-- Green Complete Gradient -->
+    <linearGradient id="greenNode" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f4c3a" />
+      <stop offset="100%" stop-color="#051c15" />
+    </linearGradient>
+
+    <!-- Glow Filter -->
+    <filter id="trackGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <!-- Arrow Marker Definition -->
+    <marker id="arrowRight" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#00f5d4" />
+    </marker>
+    <marker id="arrowLeft" viewBox="0 0 10 10" refX="4" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 9 1 L 0 5 L 9 9 z" fill="#38bdf8" />
+    </marker>
+
+    <!-- CSS Keyframe Animations -->
+    <style>
+      @keyframes dashAnim {
+        to { stroke-dashoffset: -40; }
+      }
+      @keyframes pulseNode {
+        0%, 100% { filter: drop-shadow(0 0 2px #00f5d4); }
+        50% { filter: drop-shadow(0 0 8px #00f5d4); }
+      }
+      @keyframes pulseAmber {
+        0%, 100% { filter: drop-shadow(0 0 2px #ffd166); }
+        50% { filter: drop-shadow(0 0 8px #ffd166); }
+      }
+      @keyframes pulseGreen {
+        0%, 100% { filter: drop-shadow(0 0 2px #10b981); }
+        50% { filter: drop-shadow(0 0 8px #10b981); }
+      }
+      .track-dash {
+        stroke-dasharray: 8 6;
+        animation: dashAnim 1.8s linear infinite;
+      }
+      .node-pulse {
+        animation: pulseNode 2.5s ease-in-out infinite;
+      }
+      .node-pulse-amber {
+        animation: pulseAmber 2.5s ease-in-out infinite;
+      }
+      .node-pulse-green {
+        animation: pulseGreen 2.5s ease-in-out infinite;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * { animation: none !important; }
+      }
+    </style>
+  </defs>
+
+  <!-- Container Box -->
+  <rect width="1200" height="370" rx="14" fill="url(#flowBg)" stroke="#00f5d4" stroke-width="1.2" opacity="0.95" />
+
+  <!-- Header Section -->
+  <g transform="translate(60, 38)">
+    <circle cx="0" cy="0" r="5" fill="#00f5d4" class="node-pulse" />
+    <text x="14" y="4" font-family="'Segoe UI', 'Consolas', sans-serif" font-size="14" font-weight="800" letter-spacing="2" fill="#ffffff">
+      DIAGRAM URUTAN MISI OTONOM (STATE MACHINE v1.0) — KUALIFIKASI SAUVC 2027
+    </text>
+    <text x="1080" y="4" font-family="'Segoe UI', 'Consolas', monospace" font-size="12" font-weight="700" fill="#ffd166" text-anchor="end">
+      TARGET: 40–45 DETIK • UNTETHERED SWIM ≥20s
+    </text>
+    <line x1="-5" y1="18" x2="1080" y2="18" stroke="#1e3a5f" stroke-width="1" />
+  </g>
+
+  <!-- Mission Trajectory Connecting Paths -->
+  <!-- Top Row Outbound Line: x=140 to x=980 at y=125 -->
+  <path d="M 140 125 L 980 125" fill="none" stroke="#1e4976" stroke-width="4" />
+  <path d="M 140 125 L 980 125" fill="none" stroke="#00f5d4" stroke-width="2.5" class="track-dash" filter="url(#trackGlow)" />
+
+  <!-- U-Turn Arc on Right: (980, 125) -> arc down to (980, 265) -->
+  <path d="M 980 125 C 1080 125, 1080 265, 980 265" fill="none" stroke="#1e4976" stroke-width="4" />
+  <path d="M 980 125 C 1080 125, 1080 265, 980 265" fill="none" stroke="#ffd166" stroke-width="2.5" class="track-dash" filter="url(#trackGlow)" />
+
+  <!-- Bottom Row Inbound Line: x=980 to x=320 at y=265 -->
+  <path d="M 980 265 L 320 265" fill="none" stroke="#1e4976" stroke-width="4" />
+  <path d="M 980 265 L 320 265" fill="none" stroke="#38bdf8" stroke-width="2.5" class="track-dash" style="animation-direction: reverse;" filter="url(#trackGlow)" />
+
+  <!-- ================= TOP ROW: OUTBOUND (HALUAN MAJU) ================= -->
+
+  <!-- NODE 1: CALIBRATION & ZERO -->
+  <g transform="translate(60, 80)">
+    <rect width="180" height="90" rx="10" fill="url(#nodeBlue)" stroke="#38bdf8" stroke-width="1.4" />
+    <rect x="0" y="0" width="180" height="24" rx="10" fill="#0d355c" />
+    <text x="12" y="16" font-family="'Segoe UI', 'Consolas', monospace" font-size="10.5" font-weight="700" fill="#38bdf8">STATE 0 • T -10s</text>
+    <text x="168" y="16" font-family="'Segoe UI', 'Consolas', monospace" font-size="10.5" font-weight="800" fill="#ffffff" text-anchor="end">10 DETIK</text>
+    <text x="12" y="44" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#e2e8f0">CALIB &amp; ZERO TARE</text>
+    <text x="12" y="60" font-family="'Segoe UI', sans-serif" font-size="10" fill="#94a3b8">MS5803 Ref Tekanan Kolam</text>
+    <text x="12" y="74" font-family="'Segoe UI', sans-serif" font-size="10" fill="#94a3b8">Tare Gyro/IMU • Wi-Fi Hotspot</text>
+  </g>
+
+  <!-- NODE 2: DIVE 50CM -->
+  <g transform="translate(290, 80)">
+    <rect width="180" height="90" rx="10" fill="url(#nodeActive)" stroke="#00f5d4" stroke-width="1.6" class="node-pulse" />
+    <rect x="0" y="0" width="180" height="24" rx="10" fill="#004d5a" />
+    <text x="12" y="16" font-family="'Segoe UI', 'Consolas', monospace" font-size="10.5" font-weight="700" fill="#00f5d4">STATE 1 • T 0s..3s</text>
+    <text x="168" y="16" font-family="'Segoe UI', 'Consolas', monospace" font-size="10.5" font-weight="800" fill="#ffffff" text-anchor="end">~3 DETIK</text>
+    <text x="12" y="44" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#ffffff">MENYELAM (DIVE)</text>
+    <text x="12" y="60" font-family="'Segoe UI', sans-serif" font-size="10" fill="#a7f3d0">Target Kedalaman: 50 cm</text>
+    <text x="12" y="74" font-family="'Segoe UI', sans-serif" font-size="10" fill="#94a3b8">PID Vertikal Aktif (T5 &amp; T6)</text>
+  </g>
+
+  <!-- NODE 3: FORWARD SWIM (CRUISE THROUGH GATE) -->
+  <g transform="translate(520, 80)">
+    <rect width="200" height="90" rx="10" fill="url(#nodeBlue)" stroke="#38bdf8" stroke-width="1.4" />
+    <rect x="0" y="0" width="200" height="24" rx="10" fill="#0d355c" />
+    <text x="12" y="16" font-family="'Segoe UI', 'Consolas', monospace" font-size="10.5" font-weight="700" fill="#38bdf8">STATE 2 • T 3s..13s</text>
+    <text x="188" y="16" font-family="'Segoe UI', 'Consolas', monospace" font-size="10.5" font-weight="800" fill="#ffffff" text-anchor="end">10 DETIK</text>
+    <text x="12" y="44" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#e2e8f0">SWIM FORWARD (GATE)</text>
+    <text x="12" y="60" font-family="'Segoe UI', sans-serif" font-size="10" fill="#93c5fd">Daya Maju 25% • T1–T4</text>
+    <text x="12" y="74" font-family="'Segoe UI', sans-serif" font-size="10" fill="#94a3b8">Kunci Kedalaman &amp; Haluan Stabil</text>
+  </g>
+
+  <!-- NODE 4: ACTIVE BRAKE -->
+  <g transform="translate(770, 80)">
+    <rect width="180" height="90" rx="10" fill="url(#goldNode)" stroke="#ffd166" stroke-width="1.5" />
+    <rect x="0" y="0" width="180" height="24" rx="10" fill="#4d3700" />
+    <text x="12" y="16" font-family="'Segoe UI', 'Consolas', monospace" font-size="10.5" font-weight="700" fill="#ffd166">STATE 3 • T 13s</text>
+    <text x="168" y="16" font-family="'Segoe UI', 'Consolas', monospace" font-size="10.5" font-weight="800" fill="#ffffff" text-anchor="end">0.5 DETIK</text>
+    <text x="12" y="44" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#ffffff">ACTIVE BRAKE</text>
+    <text x="12" y="60" font-family="'Segoe UI', sans-serif" font-size="10" fill="#fde68a">Pulsa Balik Inersia (Reverse)</text>
+    <text x="12" y="74" font-family="'Segoe UI', sans-serif" font-size="10" fill="#cbd5e1">Stop Presisi Tanpa Hanyut</text>
+  </g>
+
+  <!-- ================= U-TURN / ROTATION ================= -->
+  <!-- NODE 5: YAW TURN 180° CW -->
+  <g transform="translate(980, 150)">
+    <rect width="170" height="90" rx="10" fill="url(#goldNode)" stroke="#ffd166" stroke-width="1.6" class="node-pulse-amber" />
+    <rect x="0" y="0" width="170" height="24" rx="10" fill="#4d3700" />
+    <text x="12" y="16" font-family="'Segoe UI', 'Consolas', monospace" font-size="10.5" font-weight="700" fill="#ffd166">STATE 4 • T 14s..18s</text>
+    <text x="158" y="16" font-family="'Segoe UI', 'Consolas', monospace" font-size="10.5" font-weight="800" fill="#ffffff" text-anchor="end">~4 DETIK</text>
+    <text x="12" y="44" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#ffffff">YAW TURN 180° CW</text>
+    <text x="12" y="60" font-family="'Segoe UI', sans-serif" font-size="10" fill="#fde68a">Putar Haluan Tertutup</text>
+    <text x="12" y="74" font-family="'Segoe UI', sans-serif" font-size="10" fill="#cbd5e1">Umpan Balik Kompas Mag</text>
+  </g>
+
+  <!-- ================= BOTTOM ROW: INBOUND (KEMBALI KE START) ================= -->
+
+  <!-- NODE 6: RETURN SWIM -->
+  <g transform="translate(620, 220)">
+    <rect width="210" height="90" rx="10" fill="url(#nodeBlue)" stroke="#38bdf8" stroke-width="1.4" />
+    <rect x="0" y="0" width="210" height="24" rx="10" fill="#0d355c" />
+    <text x="12" y="16" font-family="'Segoe UI', 'Consolas', monospace" font-size="10.5" font-weight="700" fill="#38bdf8">STATE 5 • T 18s..28s</text>
+    <text x="198" y="16" font-family="'Segoe UI', 'Consolas', monospace" font-size="10.5" font-weight="800" fill="#ffffff" text-anchor="end">10 DETIK</text>
+    <text x="12" y="44" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#e2e8f0">RETURN SWIM (HOMING)</text>
+    <text x="12" y="60" font-family="'Segoe UI', sans-serif" font-size="10" fill="#93c5fd">Melintasi Gawang Kembali</text>
+    <text x="12" y="74" font-family="'Segoe UI', sans-serif" font-size="10" fill="#94a3b8">Kompensasi rev_boost 1.30</text>
+  </g>
+
+  <!-- NODE 7: SOFT SURFACE & FINISH -->
+  <g transform="translate(320, 220)">
+    <rect width="240" height="90" rx="10" fill="url(#greenNode)" stroke="#10b981" stroke-width="1.6" class="node-pulse-green" />
+    <rect x="0" y="0" width="240" height="24" rx="10" fill="#08422f" />
+    <text x="12" y="16" font-family="'Segoe UI', 'Consolas', monospace" font-size="10.5" font-weight="700" fill="#34d399">STATE 6 • T 28s..35s</text>
+    <text x="228" y="16" font-family="'Segoe UI', 'Consolas', monospace" font-size="10.5" font-weight="800" fill="#ffffff" text-anchor="end">SUKSES</text>
+    <text x="12" y="44" font-family="'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#ffffff">SOFT SURFACE &amp; LOG DISARM</text>
+    <text x="12" y="60" font-family="'Segoe UI', sans-serif" font-size="10" fill="#a7f3d0">Netral Motor (1500 µs) • Apung Positif</text>
+    <text x="12" y="74" font-family="'Segoe UI', sans-serif" font-size="10" fill="#cbd5e1">Audit Log Tersimpan • Wi-Fi Aktif Kembali</text>
+  </g>
+
+  <!-- Summary Metric Pill at Bottom-Left -->
+  <g transform="translate(60, 326)">
+    <rect width="200" height="26" rx="13" fill="#06182c" stroke="#38bdf8" stroke-width="1" />
+    <text x="100" y="17" font-family="'Segoe UI', 'Consolas', monospace" font-size="10.5" font-weight="700" fill="#38bdf8" text-anchor="middle">
+      TOTAL MISI: ~43 DETIK
+    </text>
+  </g>
+
+  <g transform="translate(280, 326)">
+    <rect width="280" height="26" rx="13" fill="#06182c" stroke="#00f5d4" stroke-width="1" />
+    <text x="140" y="17" font-family="'Segoe UI', 'Consolas', monospace" font-size="10.5" font-weight="700" fill="#00f5d4" text-anchor="middle">
+      KUALIFIKASI SAUVC: LOLOS REGULASI
+    </text>
+  </g>
+
+  <g transform="translate(580, 326)">
+    <rect width="250" height="26" rx="13" fill="#06182c" stroke="#ffd166" stroke-width="1" />
+    <text x="125" y="17" font-family="'Segoe UI', 'Consolas', monospace" font-size="10.5" font-weight="700" fill="#ffd166" text-anchor="middle">
+      FAILSAFE: 600 ms WATCHDOG
+    </text>
+  </g>
+</svg>
