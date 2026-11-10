@@ -94,6 +94,40 @@ float previousDepthCm = 0.0f;
 uint32_t lastDepthTimestampMs = 0;
 uint32_t lastDepthSampleCount = 0;
 bool previousDepthValid = false;
+
+// Active Adaptive PID Gains (Online RL Engine)
+float activeDepthKp = ROVConfig::DEFAULT_DEPTH_KP;
+float activeDepthKd = ROVConfig::DEFAULT_DEPTH_KD;
+float activeRollKp = ROVConfig::DEFAULT_STABILIZATION_KP;
+float activeRollKd = ROVConfig::DEFAULT_STABILIZATION_KD;
+float activeYawKp = ROVConfig::DEFAULT_YAW_KP;
+float activeYawKd = ROVConfig::DEFAULT_YAW_KD;
+
+// State tracking for online adaptation & oscillation detection
+float lastDepthErrorCm = 0.0f;
+float lastRollErrorDeg = 0.0f;
+float lastYawErrorDeg = 0.0f;
+uint32_t lastDepthSignFlipMs = 0;
+uint32_t lastRollSignFlipMs = 0;
+uint32_t lastYawSignFlipMs = 0;
+float currentYawErrorDeg = 0.0f;
+bool yawControlActive = false;
+
+void resetAdaptiveGains() {
+  activeDepthKp = settings.depthKp;
+  activeDepthKd = settings.depthKd;
+  activeRollKp = settings.stabilizationKp;
+  activeRollKd = settings.stabilizationKd;
+  activeYawKp = settings.yawKp;
+  activeYawKd = settings.yawKd;
+  lastDepthErrorCm = 0.0f;
+  lastRollErrorDeg = 0.0f;
+  lastYawErrorDeg = 0.0f;
+  lastDepthSignFlipMs = 0;
+  lastRollSignFlipMs = 0;
+  lastYawSignFlipMs = 0;
+}
+
 String setupApName;
 String setupApPassword;
 char activeWebPassword[33]{};
@@ -369,6 +403,7 @@ void setDefaults() {
   settings.beepCalib = DEFAULT_BEEP_CALIB;
   settings.beepMission = DEFAULT_BEEP_MISSION;
   settings.beepPwrPercent = DEFAULT_BEEP_PWR_PERCENT;
+  resetAdaptiveGains();
 }
 
 bool persistSettings();
@@ -519,6 +554,7 @@ void resetPidState() {
   lastDepthTimestampMs = 0;
   lastDepthSampleCount = 0;
   previousDepthValid = false;
+  resetAdaptiveGains();
 }
 
 void stopAllThrusters() {
@@ -536,6 +572,8 @@ void stopAllThrusters() {
     missionState = MISSION_IDLE;
   }
   autorunCancelled = true;
+  yawControlActive = false;
+  currentYawErrorDeg = 0.0f;
   resetPidState();
   memset(axisInput, 0, sizeof(axisInput));
   memset(individualThrusterInput, 0, sizeof(individualThrusterInput));
@@ -1080,7 +1118,9 @@ void updateAutonomousStateMachine(uint32_t now) {
       posY_m += vSurge * sinf(headingRad) * dtOdom;
 
       const float headingErr = wrapAngle180(referenceHeadingDeg - gyroIntegratedHeadingDeg);
-      const float yawCorr = constrain(- (settings.yawKp * headingErr - settings.yawKd * sensor.gyroDps[2]), -0.25f, 0.25f);
+      currentYawErrorDeg = headingErr;
+      yawControlActive = true;
+      const float yawCorr = constrain(- (activeYawKp * headingErr - activeYawKd * sensor.gyroDps[2]), -0.25f, 0.25f);
       axisInput[3] = yawCorr;
 
       if (now - lastAutonLogMs >= 3000) {
@@ -1105,6 +1145,8 @@ void updateAutonomousStateMachine(uint32_t now) {
     }
 
     case AUTON_BRAKE: {
+      yawControlActive = false;
+      currentYawErrorDeg = 0.0f;
       axisInput[0] = - (settings.swimPower / 100.0f) * 0.5f;
       axisInput[3] = 0.0f;
 
@@ -1126,12 +1168,14 @@ void updateAutonomousStateMachine(uint32_t now) {
       gyroIntegratedHeadingDeg += (sensor.gyroDps[2] - gyroBias[2]) * dt;
 
       const float turnErr = wrapAngle180(turnTargetHeadingDeg - gyroIntegratedHeadingDeg);
+      currentYawErrorDeg = turnErr;
+      yawControlActive = true;
       const float turnPwr = settings.turnPower / 100.0f;
 
       if (fabsf(turnErr) > 20.0f) {
         axisInput[3] = (turnErr > 0) ? -turnPwr : turnPwr;
       } else {
-        axisInput[3] = constrain(- (settings.yawKp * turnErr), -turnPwr, turnPwr);
+        axisInput[3] = constrain(- (activeYawKp * turnErr), -turnPwr, turnPwr);
       }
 
       if (fabsf(turnErr) <= settings.yawTolDeg) {
@@ -1178,7 +1222,9 @@ void updateAutonomousStateMachine(uint32_t now) {
       posY_m += vSurge * sinf(headingRad) * dtOdom;
 
       const float headingErr = wrapAngle180(turnTargetHeadingDeg - gyroIntegratedHeadingDeg);
-      const float yawCorr = constrain(- (settings.yawKp * headingErr - settings.yawKd * sensor.gyroDps[2]), -0.25f, 0.25f);
+      currentYawErrorDeg = headingErr;
+      yawControlActive = true;
+      const float yawCorr = constrain(- (activeYawKp * headingErr - activeYawKd * sensor.gyroDps[2]), -0.25f, 0.25f);
       axisInput[3] = yawCorr;
 
       if (now - lastAutonLogMs >= 3000) {
@@ -1602,6 +1648,211 @@ bool attachThrusters() {
   return true;
 }
 
+// Online RL-PID Adaptive Gain Tuning Engine
+void updateAdaptivePid(float dt, const ROVSensors::State& sensor,
+                       float rollError, float depthErrorCm, float yawErrorDeg,
+                       bool rollActive, bool depthActive, bool yawActive) {
+  // If RL is disabled, maintain exact nominal baseline gains
+  if (settings.rlEnabled == 0) {
+    activeDepthKp = settings.depthKp;
+    activeDepthKd = settings.depthKd;
+    activeRollKp = settings.stabilizationKp;
+    activeRollKd = settings.stabilizationKd;
+    activeYawKp = settings.yawKp;
+    activeYawKd = settings.yawKd;
+    return;
+  }
+
+  // If system is disarmed, reset to nominal baselines
+  if (!armed) {
+    resetAdaptiveGains();
+    return;
+  }
+
+  const uint32_t now = millis();
+  const float alpha = constrain(settings.rlRate, 0.0001f, 0.1f);
+  const float dtClamped = constrain(dt, 0.005f, 0.05f);
+
+  // Hard safety upper bound
+  const float maxKp = max(settings.rlMaxKp, 0.01f);
+
+  // ================= 1. DEPTH ADAPTIVE PID =================
+  if (depthActive && isfinite(depthErrorCm) && isfinite(depthRateCmPerSecond)) {
+    const float depthDeadband = static_cast<float>(settings.depthDeadbandCm);
+    const float eNorm = max(20.0f, static_cast<float>(settings.depthTargetCm));
+    const float absE = fabsf(depthErrorCm);
+    const float eNormRatio = constrain(absE / eNorm, 0.0f, 2.0f);
+
+    // Oscillation detection: rapid sign flip under non-trivial velocity
+    bool depthOscillating = false;
+    if (lastDepthErrorCm * depthErrorCm < -0.01f) {
+      if (lastDepthSignFlipMs > 0 && (now - lastDepthSignFlipMs < 800) &&
+          fabsf(depthRateCmPerSecond) > 4.0f) {
+        depthOscillating = true;
+      }
+      lastDepthSignFlipMs = now;
+    }
+    lastDepthErrorCm = depthErrorCm;
+
+    // Kp Adaptation:
+    // If steady error exists (|e| > deadband) and not oscillating: Delta Kp = + alpha * (|e| / e_norm) * dt
+    // If near zero (|e| <= deadband) or oscillating: Delta Kp = - 0.5 * alpha * Kp * dt
+    if (absE > depthDeadband && !depthOscillating) {
+      const float deltaKp = alpha * eNormRatio * dtClamped;
+      activeDepthKp += deltaKp;
+    } else {
+      if (activeDepthKp > settings.depthKp) {
+        activeDepthKp -= 0.5f * alpha * activeDepthKp * dtClamped;
+        if (activeDepthKp < settings.depthKp && !depthOscillating) {
+          activeDepthKp = settings.depthKp;
+        }
+      } else if (depthOscillating) {
+        activeDepthKp -= 0.5f * alpha * activeDepthKp * dtClamped;
+      }
+    }
+
+    // Hard bounds: [settings.depthKp * 0.5, rlMaxKp]
+    const float minDepthKp = settings.depthKp * 0.5f;
+    const float maxDepthKp = max(settings.depthKp, maxKp);
+    activeDepthKp = constrain(activeDepthKp, minDepthKp, maxDepthKp);
+
+    // Damping Kd Adaptation:
+    // If rapid oscillation is detected, boost Kd by up to 25% to quench oscillation
+    const float maxDepthKd = settings.depthKd * 1.25f;
+    if (depthOscillating) {
+      activeDepthKd = min(maxDepthKd, activeDepthKd + 0.25f * settings.depthKd * alpha * 10.0f);
+    } else if (activeDepthKd > settings.depthKd) {
+      activeDepthKd = max(settings.depthKd, activeDepthKd - 0.5f * alpha * settings.depthKd * dtClamped);
+    }
+    activeDepthKd = constrain(activeDepthKd, settings.depthKd, maxDepthKd);
+  } else {
+    // Smooth decay to nominal when inactive
+    if (activeDepthKp > settings.depthKp) {
+      activeDepthKp = max(settings.depthKp, activeDepthKp - 0.5f * alpha * activeDepthKp * dtClamped);
+    }
+    if (activeDepthKd > settings.depthKd) {
+      activeDepthKd = max(settings.depthKd, activeDepthKd - 0.5f * alpha * settings.depthKd * dtClamped);
+    }
+  }
+
+  // ================= 2. ROLL STABILIZATION ADAPTIVE PID =================
+  if (rollActive && isfinite(rollError) && isfinite(sensor.gyroDps[0])) {
+    const float rollDeadband = 1.0f; // degrees
+    const float eNorm = 15.0f;       // degrees
+    const float absE = fabsf(rollError);
+    const float eNormRatio = constrain(absE / eNorm, 0.0f, 2.0f);
+
+    // Oscillation detection: rapid sign flip while gyro rate is significant
+    bool rollOscillating = false;
+    if (lastRollErrorDeg * rollError < -0.01f) {
+      if (lastRollSignFlipMs > 0 && (now - lastRollSignFlipMs < 800) &&
+          fabsf(sensor.gyroDps[0]) > 8.0f) {
+        rollOscillating = true;
+      }
+      lastRollSignFlipMs = now;
+    }
+    lastRollErrorDeg = rollError;
+
+    // Kp Adaptation
+    if (absE > rollDeadband && !rollOscillating) {
+      const float deltaKp = alpha * eNormRatio * dtClamped;
+      activeRollKp += deltaKp;
+    } else {
+      if (activeRollKp > settings.stabilizationKp) {
+        activeRollKp -= 0.5f * alpha * activeRollKp * dtClamped;
+        if (activeRollKp < settings.stabilizationKp && !rollOscillating) {
+          activeRollKp = settings.stabilizationKp;
+        }
+      } else if (rollOscillating) {
+        activeRollKp -= 0.5f * alpha * activeRollKp * dtClamped;
+      }
+    }
+
+    // Hard bounds: [settings.stabilizationKp * 0.5, rlMaxKp]
+    const float minRollKp = settings.stabilizationKp * 0.5f;
+    const float maxRollKp = max(settings.stabilizationKp, maxKp);
+    activeRollKp = constrain(activeRollKp, minRollKp, maxRollKp);
+
+    // Damping Kd Adaptation:
+    const float maxRollKd = settings.stabilizationKd * 1.25f;
+    if (rollOscillating) {
+      activeRollKd = min(maxRollKd, activeRollKd + 0.25f * settings.stabilizationKd * alpha * 10.0f);
+    } else if (activeRollKd > settings.stabilizationKd) {
+      activeRollKd = max(settings.stabilizationKd, activeRollKd - 0.5f * alpha * settings.stabilizationKd * dtClamped);
+    }
+    activeRollKd = constrain(activeRollKd, settings.stabilizationKd, maxRollKd);
+  } else {
+    if (activeRollKp > settings.stabilizationKp) {
+      activeRollKp = max(settings.stabilizationKp, activeRollKp - 0.5f * alpha * activeRollKp * dtClamped);
+    }
+    if (activeRollKd > settings.stabilizationKd) {
+      activeRollKd = max(settings.stabilizationKd, activeRollKd - 0.5f * alpha * settings.stabilizationKd * dtClamped);
+    }
+  }
+
+  // ================= 3. YAW HEADING ADAPTIVE PID =================
+  if (yawActive && isfinite(yawErrorDeg) && isfinite(sensor.gyroDps[2])) {
+    const float yawDeadband = static_cast<float>(settings.yawTolDeg);
+    const float eNorm = 25.0f; // degrees
+    const float absE = fabsf(yawErrorDeg);
+    const float eNormRatio = constrain(absE / eNorm, 0.0f, 2.0f);
+
+    bool yawOscillating = false;
+    if (lastYawErrorDeg * yawErrorDeg < -0.01f) {
+      if (lastYawSignFlipMs > 0 && (now - lastYawSignFlipMs < 800) &&
+          fabsf(sensor.gyroDps[2]) > 10.0f) {
+        yawOscillating = true;
+      }
+      lastYawSignFlipMs = now;
+    }
+    lastYawErrorDeg = yawErrorDeg;
+
+    // Kp Adaptation
+    if (absE > yawDeadband && !yawOscillating) {
+      const float deltaKp = alpha * eNormRatio * dtClamped;
+      activeYawKp += deltaKp;
+    } else {
+      if (activeYawKp > settings.yawKp) {
+        activeYawKp -= 0.5f * alpha * activeYawKp * dtClamped;
+        if (activeYawKp < settings.yawKp && !yawOscillating) {
+          activeYawKp = settings.yawKp;
+        }
+      } else if (yawOscillating) {
+        activeYawKp -= 0.5f * alpha * activeYawKp * dtClamped;
+      }
+    }
+
+    // Hard bounds: [settings.yawKp * 0.5, rlMaxKp]
+    const float minYawKp = settings.yawKp * 0.5f;
+    const float maxYawKp = max(settings.yawKp, maxKp);
+    activeYawKp = constrain(activeYawKp, minYawKp, maxYawKp);
+
+    // Damping Kd Adaptation:
+    const float maxYawKd = settings.yawKd * 1.25f;
+    if (yawOscillating) {
+      activeYawKd = min(maxYawKd, activeYawKd + 0.25f * settings.yawKd * alpha * 10.0f);
+    } else if (activeYawKd > settings.yawKd) {
+      activeYawKd = max(settings.yawKd, activeYawKd - 0.5f * alpha * settings.yawKd * dtClamped);
+    }
+    activeYawKd = constrain(activeYawKd, settings.yawKd, maxYawKd);
+  } else {
+    if (activeYawKp > settings.yawKp) {
+      activeYawKp = max(settings.yawKp, activeYawKp - 0.5f * alpha * activeYawKp * dtClamped);
+    }
+    if (activeYawKd > settings.yawKd) {
+      activeYawKd = max(settings.yawKd, activeYawKd - 0.5f * alpha * settings.yawKd * dtClamped);
+    }
+  }
+
+  // ================= 4. FAILSAFE SANITY GUARDS =================
+  if (!isfinite(activeDepthKp) || activeDepthKp <= 0.0f) activeDepthKp = settings.depthKp;
+  if (!isfinite(activeDepthKd) || activeDepthKd < 0.0f) activeDepthKd = settings.depthKd;
+  if (!isfinite(activeRollKp) || activeRollKp <= 0.0f) activeRollKp = settings.stabilizationKp;
+  if (!isfinite(activeRollKd) || activeRollKd < 0.0f) activeRollKd = settings.stabilizationKd;
+  if (!isfinite(activeYawKp) || activeYawKp <= 0.0f) activeYawKp = settings.yawKp;
+  if (!isfinite(activeYawKd) || activeYawKd < 0.0f) activeYawKd = settings.yawKd;
+}
+
 void updateThrusters() {
   if (!outputsReady) {
     return;
@@ -1672,6 +1923,8 @@ void updateThrusters() {
     }
     if (stabilizationEnabled || depthHoldEnabled) {
       const float elapsedSeconds = elapsedMs / 1000.0f;
+      float pitchError = 0.0f;
+      float rollError = 0.0f;
       if (stabilizationEnabled) {
         const float maxTargetAngle = settings.stabilizationMaxAngleDegrees;
         const float targetRate = settings.stabilizationTargetRateDps;
@@ -1682,41 +1935,19 @@ void updateThrusters() {
             stabilizationTargetRoll + axisInput[5] * targetRate * elapsedSeconds,
             -maxTargetAngle, maxTargetAngle);
 
-        const float maxOutput =
-            settings.stabilizationMaxOutputPercent / 100.0f;
-        const float pitchError = stabilizationTargetPitch - sensor.attitudePitch;
-        const float rollError = stabilizationTargetRoll - sensor.attitudeRoll;
-        if (axisHasMixer(4)) {
-          stabilizationPitchIntegral = constrain(
-              stabilizationPitchIntegral +
-                  settings.stabilizationKi * pitchError * elapsedSeconds,
-              -maxOutput, maxOutput);
-          commandedAxes[4] = constrain(
-              settings.stabilizationKp * pitchError +
-                  stabilizationPitchIntegral -
-                  settings.stabilizationKd * sensor.gyroDps[1],
-              -maxOutput, maxOutput);
-        }
-        if (axisHasMixer(5)) {
-          stabilizationRollIntegral = constrain(
-              stabilizationRollIntegral +
-                  settings.stabilizationKi * rollError * elapsedSeconds,
-              -maxOutput, maxOutput);
-          commandedAxes[5] = constrain(
-              settings.stabilizationKp * rollError +
-                  stabilizationRollIntegral -
-                  settings.stabilizationKd * sensor.gyroDps[0],
-              -maxOutput, maxOutput);
-        }
+        pitchError = stabilizationTargetPitch - sensor.attitudePitch;
+        rollError = stabilizationTargetRoll - sensor.attitudeRoll;
       }
 
+      float depthErrorCm = 0.0f;
+      float depthCm = 0.0f;
       if (depthHoldEnabled) {
         const float depthMeters = (sensor.pressureMbar -
             depthReferencePressureMbar) * 100.0f /
             (settings.waterDensity * 9.80665f);
-        const float depthCm = depthMeters * 100.0f;
+        depthCm = depthMeters * 100.0f;
         const float targetDepthCm = settings.depthTargetCm;
-        const float depthErrorCm = targetDepthCm - depthCm;
+        depthErrorCm = targetDepthCm - depthCm;
 
         // Anti-derivative kick: compute depth rate only on fresh pressure samples
         if (sensor.pressureSampleCount != lastDepthSampleCount &&
@@ -1736,7 +1967,42 @@ void updateThrusters() {
           lastDepthSampleCount = sensor.pressureSampleCount;
           previousDepthValid = true;
         }
+      }
 
+      // Execute Online RL-PID adaptive gain tuning
+      updateAdaptivePid(elapsedSeconds, sensor, rollError, depthErrorCm, currentYawErrorDeg,
+                        stabilizationEnabled && axisHasMixer(5),
+                        depthHoldEnabled,
+                        yawControlActive);
+
+      if (stabilizationEnabled) {
+        const float maxOutput =
+            settings.stabilizationMaxOutputPercent / 100.0f;
+        if (axisHasMixer(4)) {
+          stabilizationPitchIntegral = constrain(
+              stabilizationPitchIntegral +
+                  settings.stabilizationKi * pitchError * elapsedSeconds,
+              -maxOutput, maxOutput);
+          commandedAxes[4] = constrain(
+              settings.stabilizationKp * pitchError +
+                  stabilizationPitchIntegral -
+                  settings.stabilizationKd * sensor.gyroDps[1],
+              -maxOutput, maxOutput);
+        }
+        if (axisHasMixer(5)) {
+          stabilizationRollIntegral = constrain(
+              stabilizationRollIntegral +
+                  settings.stabilizationKi * rollError * elapsedSeconds,
+              -maxOutput, maxOutput);
+          commandedAxes[5] = constrain(
+              activeRollKp * rollError +
+                  stabilizationRollIntegral -
+                  activeRollKd * sensor.gyroDps[0],
+              -maxOutput, maxOutput);
+        }
+      }
+
+      if (depthHoldEnabled) {
         const float maxOutput = settings.depthMaxOutputPercent / 100.0f;
         if (missionState == AUTON_SURFACE && depthCm < 5.0f) {
           commandedAxes[2] = 0.0f;
@@ -1749,13 +2015,19 @@ void updateThrusters() {
               depthIntegral + settings.depthKi * depthErrorCm * elapsedSeconds,
               -maxOutput, maxOutput);
           const float pidOutput = constrain(
-              settings.depthKp * depthErrorCm + depthIntegral -
-                  settings.depthKd * depthRateCmPerSecond,
+              activeDepthKp * depthErrorCm + depthIntegral -
+                  activeDepthKd * depthRateCmPerSecond,
               -maxOutput, maxOutput);
           commandedAxes[2] = -pidOutput + (settings.heaveBias / 100.0f);
         }
       }
     }
+  } else if (armed && !individualThrusterMode) {
+    ROVSensors::State sensor{};
+    ROVSensors::snapshot(sensor);
+    const float elapsedSeconds = elapsedMs / 1000.0f;
+    updateAdaptivePid(elapsedSeconds, sensor, 0.0f, 0.0f, currentYawErrorDeg,
+                      false, false, yawControlActive);
   }
 
   float motorOutput[THRUSTER_COUNT]{};
@@ -1876,6 +2148,9 @@ void sendConfiguration() {
   json += ",\"depthMaxOutput\":" + String(settings.depthMaxOutputPercent);
   json += ",\"depthDeadband\":" + String(settings.depthDeadbandCm);
   json += ",\"depthTarget\":" + String(settings.depthTargetCm);
+  json += ",\"rlEnabled\":" + String(settings.rlEnabled ? "true" : "false");
+  json += ",\"rlRate\":" + String(settings.rlRate, 4);
+  json += ",\"rlMaxKp\":" + String(settings.rlMaxKp, 4);
   json += ",\"layoutMigrated\":" + String(settingsLayoutMigrated ? "true" : "false");
   json += ",\"ssid\":";
   appendJsonString(json, settings.wifiSsid);
@@ -2607,6 +2882,7 @@ void setup() {
     settingsLoaded = persistSettings();
     Serial.println("EEPROM baru/direset ke konfigurasi Firmware v1.0 default.");
   }
+  resetAdaptiveGains();
   setupMode = false;
 
   // Initialize Unified CLI Engine & Ring-Buffer Logger
@@ -2624,6 +2900,15 @@ void setup() {
   ctx.posX = &posX_m;
   ctx.posY = &posY_m;
   ctx.posZ = &posZ_m;
+
+  // Active Adaptive PID Gains (Online RL Engine)
+  ctx.activeDepthKp = &activeDepthKp;
+  ctx.activeDepthKd = &activeDepthKd;
+  ctx.activeRollKp = &activeRollKp;
+  ctx.activeRollKd = &activeRollKd;
+  ctx.activeYawKp = &activeYawKp;
+  ctx.activeYawKd = &activeYawKd;
+
   ctx.stopAllThrusters = stopAllThrusters;
   ctx.persistSettings = persistSettings;
   ctx.setDefaults = setDefaults;
@@ -2636,6 +2921,7 @@ void setup() {
   ctx.setSimMode = cliSetSimMode;
   ctx.selfTest = cliRunSelfTest;
   ctx.blackboxControl = cliBlackboxControl;
+  ctx.resetAdaptiveGains = resetAdaptiveGains;
   CLIEngine::begin(ctx);
   CLIEngine::log(CLIEngine::Level::INFO, "FS", "LittleFS mounted for wireless OTA firmware update");
 

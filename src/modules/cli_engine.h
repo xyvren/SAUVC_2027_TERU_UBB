@@ -31,6 +31,14 @@ struct SystemContext {
   float* posY;
   float* posZ;
 
+  // Active Adaptive PID Gains (Online RL Engine)
+  float* activeDepthKp;
+  float* activeDepthKd;
+  float* activeRollKp;
+  float* activeRollKd;
+  float* activeYawKp;
+  float* activeYawKd;
+
   // System Action Callbacks
   void (*stopAllThrusters)();
   bool (*persistSettings)();
@@ -44,6 +52,7 @@ struct SystemContext {
   void (*setSimMode)(bool enabled);
   bool (*selfTest)(String& response);
   bool (*blackboxControl)(const String& action, String& response);
+  void (*resetAdaptiveGains)();
 };
 
 void begin(const SystemContext& context);

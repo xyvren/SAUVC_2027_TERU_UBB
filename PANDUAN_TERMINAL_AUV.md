@@ -271,7 +271,7 @@ Sistem parsing baris perintah v1.0 dirancang sangat fleksibel:
 | **`pid roll <p> <i> <d>`** | Parameter kendali penyeimbang kemiringan samping (*Roll*). | Kp, Ki, Kd: 0 – 2.0 | `0.40 0.02 0.10` | `pid roll 0.5 0.02 0.1` |
 | **`pid yaw <p> <i> <d>`** | Parameter kendali penahan haluan lurus (*Gyro Heading Hold*). | Kp, Ki, Kd: 0 – 2.0 | `0.50 0.01 0.10` | `pid yaw 0.5 0.01 0.12` |
 | **`pid_limit <%>`** | Batas alokasi daya maksimum yang diizinkan untuk koreksi PID. | 5 – 100 % | **30 %** | `pid_limit 30`<br>`set pid_limit 40` |
-| **`rl <on/off>`** | Mengaktifkan modul adaptasi penguatan PID dinamis secara mandiri. | `on`, `off` | **`off`** | `rl on`<br>`set rl off` |
+| **`rl <status/on/off>`** | Mengaktifkan/memeriksa modul online RL-PID adaptive tuning real-time. | `status`, `on`, `off` | **`off`** | `rl status`<br>`rl on`<br>`set rl off` |
 | **`rl_rate <val>`** | Laju kecepatan adaptasi nilai gain RL-PID per detik. | 0.0001 – 0.1000 | **0.0050** | `rl_rate 0.005` |
 | **`rl_max_kp <val>`** | Plafon batas atas kenaikan gain Kp agar sistem tidak berosilasi liar. | 0.01 – 2.00 | **1.20** | `rl_max_kp 1.2` |
 

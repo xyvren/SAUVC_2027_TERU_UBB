@@ -190,6 +190,7 @@ namespace {
 
 String getHelpText();
 String getStatusReport();
+String getRlStatusReport();
 String getConfigurationSummary();
 String getThrusterTable();
 String exportConfigJson();
@@ -213,7 +214,8 @@ String getHelpText() {
     "  set <param> <val>          - Set parameter value (see 'get all' for list)\r\n"
     "  set ssid <name>            - Set Wi-Fi Access Point SSID (1-32 chars)\r\n"
     "  set wifi_pass <password>   - Set Wi-Fi Access Point password (8-63 chars)\r\n"
-    "  set pid <depth/roll/yaw> <kp> <ki> <kd> - Tune PID gains\r\n\r\n"
+    "  set pid <depth/roll/yaw> <kp> <ki> <kd> - Tune PID gains\r\n"
+    "  rl <status/on/off>         - Online RL-PID adaptive gain tuning & status\r\n\r\n"
     "THRUSTERS:\r\n"
     "  thrusters                  - Display 6-thruster configuration table\r\n"
     "  thruster <id> <prop> <val> - Configure thruster (min/max/neutral/reverse/rev_boost)\r\n"
@@ -295,7 +297,43 @@ String getStatusReport() {
   out += "  Max Power     : " + String(sysCtx.settings->maxPowerPercent) + "% | Ramp: " + String(sysCtx.settings->rampPercentPerSecond) + "%/s\r\n";
   out += "  Safety Limits : Max Depth: " + String(sysCtx.settings->maxDepthCm) + " cm | Max Tilt: " + String(sysCtx.settings->maxTiltDeg) + " deg\r\n";
   out += "  Timeouts      : Mission: " + String(sysCtx.settings->timeoutSec) + " s | Step: " + String(sysCtx.settings->stepTimeoutSec) + " s\r\n";
+  out += "  Adaptive RL   : " + String(sysCtx.settings->rlEnabled ? "ON (Learning)" : "OFF (Baseline)") + "\r\n";
   out += "=========================";
+  return out;
+}
+
+String getRlStatusReport() {
+  if (!contextInitialized || !sysCtx.settings) {
+    return "ERROR: SystemContext not initialized.";
+  }
+  const ROVConfig::Settings* s = sysCtx.settings;
+  const bool enabled = (s->rlEnabled != 0);
+  const bool isArmed = (sysCtx.armed && *sysCtx.armed);
+
+  String stateStr;
+  if (!enabled) {
+    stateStr = "DISABLED (Baseline PID)";
+  } else if (!isArmed) {
+    stateStr = "STANDBY (Disarmed, Gains Nominal)";
+  } else {
+    stateStr = "ACTIVE (Learning)";
+  }
+
+  const float depthKpBase = s->depthKp;
+  const float depthKpActive = sysCtx.activeDepthKp ? *sysCtx.activeDepthKp : depthKpBase;
+  const float rollKpBase = s->stabilizationKp;
+  const float rollKpActive = sysCtx.activeRollKp ? *sysCtx.activeRollKp : rollKpBase;
+  const float yawKpBase = s->yawKp;
+  const float yawKpActive = sysCtx.activeYawKp ? *sysCtx.activeYawKp : yawKpBase;
+
+  String out;
+  out.reserve(384);
+  out += "=== RL-PID ADAPTIVE STATUS ===\r\n";
+  out += "State: " + stateStr + "\r\n";
+  out += "Depth Kp : Base=" + String(depthKpBase, 4) + " -> Active=" + String(depthKpActive, 4) + " (Max=" + String(s->rlMaxKp, 4) + ")\r\n";
+  out += "Roll Kp  : Base=" + String(rollKpBase, 4) + " -> Active=" + String(rollKpActive, 4) + " (Max=" + String(s->rlMaxKp, 4) + ")\r\n";
+  out += "Yaw Kp   : Base=" + String(yawKpBase, 4) + " -> Active=" + String(yawKpActive, 4) + " (Max=" + String(s->rlMaxKp, 4) + ")\r\n";
+  out += "Learning Rate (alpha): " + String(s->rlRate, 4);
   return out;
 }
 
@@ -495,7 +533,7 @@ String handleGetCommand(const String& param) {
            "pid yaw  : Kp=" + String(s->yawKp, 4) + " Ki=" + String(s->yawKi, 4) + " Kd=" + String(s->yawKd, 4);
   }
   if (p == "pid_limit") return "pid_limit = " + String(s->pidLimitPercent) + " %";
-  if (p == "rl") return "rl = " + String(s->rlEnabled ? "ON" : "OFF");
+  if (p == "rl") return getRlStatusReport();
   if (p == "rl_rate") return "rl_rate = " + String(s->rlRate, 4);
   if (p == "rl_max_kp") return "rl_max_kp = " + String(s->rlMaxKp, 4);
 
@@ -757,9 +795,16 @@ String handleSetCommand(const String tokens[], size_t tokenCount) {
     if (val < 5 || val > 100) return "ERROR: pid_limit must be between 5 and 100%.";
     s->pidLimitPercent = static_cast<uint8_t>(val);
   } else if (param == "rl") {
+    if (valStr.equalsIgnoreCase("status")) {
+      return getRlStatusReport();
+    }
     bool b = false;
     if (!parseBool(valStr, b)) return "ERROR: rl must be on/off or 1/0.";
     s->rlEnabled = b ? 1 : 0;
+    if (!b && sysCtx.resetAdaptiveGains) {
+      sysCtx.resetAdaptiveGains();
+    }
+    log(Level::STATE, "RL", "Online RL-PID adaptive tuning %s", b ? "ENABLED" : "DISABLED");
   } else if (param == "rl_rate") {
     float val = valStr.toFloat();
     if (val < 0.0001f || val > 0.1f) return "ERROR: rl_rate must be between 0.0001 and 0.1.";
@@ -858,7 +903,8 @@ String executeCommand(const String& cmdLine, bool isWeb) {
                              root == "thruster" || root == "calib" || root == "esc_calib" ||
                              root == "sim" || root == "reboot" || root == "selftest" ||
                              (root == "autorun" && tokenCount > 1) ||
-                             (isKnownParam(root) && tokenCount > 1));
+                             (root == "rl" && tokenCount > 1 && !tokens[1].equalsIgnoreCase("status")) ||
+                             (isKnownParam(root) && root != "rl" && tokenCount > 1));
   if (isControlCmd && sysCtx.cancelAutorun) {
     sysCtx.cancelAutorun();
   }
@@ -914,7 +960,36 @@ String executeCommand(const String& cmdLine, bool isWeb) {
     return "ERROR: SystemContext not initialized.";
   }
 
-  // 6. SET <param> <val>
+  // 6. RL <status/on/off>
+  if (root == "rl") {
+    if (tokenCount == 1 || tokens[1].equalsIgnoreCase("status")) {
+      return getRlStatusReport();
+    }
+    String action = tokens[1];
+    action.toLowerCase();
+    if (action == "on" || action == "1" || action == "enable") {
+      if (sysCtx.settings) {
+        sysCtx.settings->rlEnabled = 1;
+        log(Level::STATE, "RL", "Online RL-PID adaptive tuning ENABLED");
+        return "OK: Online RL-PID adaptive tuning ENABLED (type 'save' to commit to EEPROM)";
+      }
+      return "ERROR: SystemContext not initialized.";
+    } else if (action == "off" || action == "0" || action == "disable") {
+      if (sysCtx.settings) {
+        sysCtx.settings->rlEnabled = 0;
+        if (sysCtx.resetAdaptiveGains) {
+          sysCtx.resetAdaptiveGains();
+        }
+        log(Level::STATE, "RL", "Online RL-PID adaptive tuning DISABLED (reverted to baseline PID)");
+        return "OK: Online RL-PID adaptive tuning DISABLED (reverted to baseline PID)";
+      }
+      return "ERROR: SystemContext not initialized.";
+    } else {
+      return "ERROR: Usage: rl <status/on/off>";
+    }
+  }
+
+  // 7. SET <param> <val>
   if (root == "set") {
     return handleSetCommand(tokens, tokenCount);
   }
