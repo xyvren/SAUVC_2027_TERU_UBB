@@ -77,7 +77,7 @@ $$\text{rev\_boost} = \frac{f_{\text{maju}}}{f_{\text{mundur}}} = \frac{1}{\text
 3. **Untuk T3:** $\text{rev\_boost} = \frac{1505}{1257} = \mathbf{1{,}20\times}$.
 4. **Untuk T4:** $\text{rev\_boost} = \frac{474}{339} = \mathbf{1{,}40\times}$ *(Wajib dinaikkan ke 1.40 agar buritan seimbang)*.
 5. **Untuk T5:** Karena arah kencangnya berada pada sinyal negatif, T5 wajib dibalik logikanya: **`reverse = 1`**.
-6. **Untuk T6:** $\text{rev\_boost} = \mathbf{1{,}30\times}$ untuk mengompensasi penurunan energi mundur sebesar 2,4 dB.
+6. **Untuk T6:** $\text{rev\_boost} = \mathbf{1{,}30\times}$ untuk mengompensasi penurunan energi mundur sebesar 2,4 dB. Selain itu, karena baling-baling T6 berjenis CW sedangkan pulsa >1500µs memutarnya CCW, T6 juga menggunakan **`reverse = 1`**.
 
 ---
 
@@ -88,6 +88,7 @@ Ketik perintah berikut di Web Terminal (`http://192.168.4.1`) untuk menerapkan h
 ```text
 /thruster 4 rev_boost 1.40
 /thruster 5 reverse 1
+/thruster 6 reverse 1
 /thruster 6 rev_boost 1.30
 /save
 ```

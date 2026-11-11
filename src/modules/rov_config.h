@@ -111,7 +111,7 @@ constexpr float VSYS_DIVIDER_MULTIPLIER = 3.0f;
 constexpr uint8_t DEFAULT_THRUSTER_PINS[THRUSTER_COUNT] = {2, 3, 4, 5, 6, 7};
 
 // Default direction inversion (0: Normal, 1: Reverse) and reverse boost compensation per motor (T1..T6)
-constexpr uint8_t DEFAULT_THRUSTER_REVERSE[THRUSTER_COUNT] = {0, 0, 0, 0, 1, 0};
+constexpr uint8_t DEFAULT_THRUSTER_REVERSE[THRUSTER_COUNT] = {0, 0, 0, 0, 1, 1};
 constexpr float DEFAULT_THRUSTER_REV_BOOST[THRUSTER_COUNT] = {1.30f, 1.05f, 1.20f, 1.40f, 1.25f, 1.35f};
 
 // Mixer row order: T1 rear-left (CW), T2 front-right (CW), T3 front-left (CCW),

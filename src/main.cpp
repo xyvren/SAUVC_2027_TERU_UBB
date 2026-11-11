@@ -414,6 +414,12 @@ bool loadSettings() {
   if (settings.magic == CONFIG_MAGIC && settings.version == CONFIG_VERSION &&
       settings.checksum == checksumSettings(settings)) {
     if (validateSettings(settings)) {
+      if (settings.reverse[4] == 0 || settings.reverse[5] == 0) {
+        settings.reverse[4] = DEFAULT_THRUSTER_REVERSE[4];
+        settings.reverse[5] = DEFAULT_THRUSTER_REVERSE[5];
+        persistSettings();
+        Serial.println("EEPROM: T5 & T6 reverse diupgrade ke 1 (T5 CCW, T6 CW).");
+      }
       return true;
     }
   }
@@ -447,6 +453,8 @@ bool loadSettings() {
     memcpy(settings.pulseNeutral, v6.pulseNeutral, sizeof(settings.pulseNeutral));
     memcpy(settings.pulseMax, v6.pulseMax, sizeof(settings.pulseMax));
     memcpy(settings.reverse, v6.reverse, sizeof(settings.reverse));
+    settings.reverse[4] = DEFAULT_THRUSTER_REVERSE[4];
+    settings.reverse[5] = DEFAULT_THRUSTER_REVERSE[5];
     memcpy(settings.mix, v6.mix, sizeof(settings.mix));
     settings.maxPowerPercent = v6.maxPowerPercent;
     settings.rampPercentPerSecond = v6.rampPercentPerSecond;
@@ -1361,7 +1369,10 @@ bool cliStartMotorTest(uint8_t id, int16_t pulseOrPercent, String& errorMsg) {
   if (pulseOrPercent >= 800 && pulseOrPercent <= 2200) {
     pulse = static_cast<uint16_t>(pulseOrPercent);
   } else if (pulseOrPercent >= -100 && pulseOrPercent <= 100) {
-    const float frac = pulseOrPercent / 100.0f;
+    float frac = pulseOrPercent / 100.0f;
+    if (settings.reverse[id - 1]) {
+      frac = -frac;
+    }
     int32_t delta = 0;
     if (frac >= 0.0f) {
       delta = lroundf(frac * (settings.pulseMax[id - 1] - settings.pulseNeutral[id - 1]));

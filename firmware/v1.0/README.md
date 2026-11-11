@@ -10,8 +10,8 @@ Direktori ini menyediakan berkas biner resmi hasil kompilasi **Firmware v1.0 Aut
 
 | Nama Berkas | Format | Ukuran | Metode Penggunaan Utama | SHA-256 Checksum |
 | :--- | :---: | :---: | :--- | :--- |
-| **`firmware_v1.0.uf2`** | UF2 (*USB Flashing Format*) | **1.068.544 byte** (~1.0 MB) | **Metode 1:** Drag-and-drop mass storage saat mode BOOTSEL USB (Board baru/kosong) | `8b0f41d7eb1aec4dcaddab0ceba8ed46ed91c5f7fc191d15f138ee473381c246` |
-| **`firmware_v1.0.bin`** | Raw Binary (*LittleFS OTA*) | **534.260 byte** (~522 KB) | **Metode 2:** Pembaruan nirkabel Over-The-Air via Web Terminal (Tanpa buka hull) | `2bb85549c97b160d06507f65e95ba74e412cfaa787545a44e1d66fa00606071e` |
+| **`firmware_v1.0.uf2`** | UF2 (*USB Flashing Format*) | **1.069.056 byte** (~1.0 MB) | **Metode 1:** Drag-and-drop mass storage saat mode BOOTSEL USB (Board baru/kosong) | `b677d97e72261f7400f35ea7d3bf5224e3ab1116bdbd5f551e4c34e8fd8b2c12` |
+| **`firmware_v1.0.bin`** | Raw Binary (*LittleFS OTA*) | **534.380 byte** (~522 KB) | **Metode 2:** Pembaruan nirkabel Over-The-Air via Web Terminal (Tanpa buka hull) | `e22efe32c6412f0d915ac70d245fdb91d40de8b3c0f6ec97379515a2541b5e85` |
 
 ---
 

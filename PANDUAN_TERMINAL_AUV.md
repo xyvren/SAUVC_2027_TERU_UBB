@@ -292,8 +292,8 @@ Setiap thruster T1 sampai T6 mendukung parameter `reverse` digital tanpa perlu m
 - **`thruster <id> reverse 0`**: Arah putaran normal (default).
 - **`thruster <id> reverse 1`**: Membalik arah vektor dorongan motor secara matematis pada firmware (maju menjadi mundur, dan sebaliknya).
 - **Contoh Perintah:**
-  - `thruster 5 reverse 0` (T5 Tengah Kanan Vertikal - CCW normal)
-  - `thruster 6 reverse 0` (T6 Tengah Kiri Vertikal - CW normal)
+  - `thruster 5 reverse 1` (T5 Tengah Kanan Vertikal - CCW reverse=1)
+  - `thruster 6 reverse 1` (T6 Tengah Kiri Vertikal - CW reverse=1)
   - `save` (Simpan konfigurasi ke memori EEPROM v1.0)
 - **Kegunaan di Lapangan:** Sangat krusial jika baling-baling motor menghasilkan dorongan terbalik di air atau orientasi kabel phase motor terpasang berlawanan, sehingga operator poolside dapat membalik arah dorong seketika via terminal tanpa perlu membongkar kompartemen kedap air.
 
